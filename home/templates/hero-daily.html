@@ -3,25 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="rex-widget" content="type=full-width; height=176">
+<meta name="rex-artwork" content="palette">
 <title>每日推荐大卡</title>
 <style>
 *{box-sizing:border-box}
 html,body{width:100%;margin:0;background:transparent}
 body{font:13px/1.3 -apple-system,system-ui,sans-serif;color:#fff;-webkit-user-select:none}
-@media (prefers-color-scheme:light){body{color:#111}}
-.hero{position:relative;display:flex;align-items:center;height:176px;padding:0 18px;border-radius:18px;overflow:hidden;background:linear-gradient(115deg,rgba(250,44,90,.28),rgba(120,80,220,.18) 55%,rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.09)}
-.art{position:relative;flex:0 0 auto;width:132px;height:132px;border-radius:14px;overflow:hidden;background:rgba(128,128,140,.25)}
+.hero{position:relative;display:flex;align-items:center;height:176px;padding:0 18px;border-radius:18px;overflow:hidden;background:linear-gradient(100deg,#2a2c34,#14151a);border:1px solid rgba(255,255,255,.1)}
+.art{position:relative;flex:0 0 auto;width:132px;height:132px;border-radius:14px;overflow:hidden;background:rgba(255,255,255,.12)}
 .art img{display:block;width:100%;height:100%;object-fit:cover}
 .art img:not([src]){visibility:hidden}
-.copy{flex:1 1 auto;min-width:0;margin-left:16px}
-.label{margin:0;font-size:10px;letter-spacing:1.5px;font-weight:600;color:rgba(255,255,255,.7);text-transform:uppercase}
-@media (prefers-color-scheme:light){.label{color:rgba(60,60,67,.65)}}
-.title{margin:7px 0 0;font-size:19px;line-height:1.25;font-weight:700;max-height:48px;overflow:hidden}
-.meta{margin:7px 0 0;font-size:11.5px;color:rgba(255,255,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media (prefers-color-scheme:light){.meta{color:rgba(60,60,67,.6)}}
-.go{display:inline-block;margin-top:12px;padding:5px 12px;border:0;border-radius:999px;background:#fa2c5a;color:#fff;font:600 11.5px/1.4 -apple-system,system-ui,sans-serif;cursor:pointer}
+.copy{position:relative;flex:1 1 auto;min-width:0;margin-left:16px}
+.label{margin:0;font-size:10px;line-height:1.4;letter-spacing:1.2px;font-weight:700;color:rgba(255,255,255,.72)}
+.title{margin:6px 0 0;font-size:20px;line-height:1.24;font-weight:700;max-height:50px;overflow:hidden}
+.meta{margin:6px 0 0;font-size:11.5px;color:rgba(255,255,255,.62);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.go{margin-top:11px;padding:5px 13px;border:0;border-radius:999px;background:#fff;color:#111;font:600 11.5px/1.5 -apple-system,system-ui,sans-serif;cursor:pointer}
 .go:focus{outline:2px solid #fff;outline-offset:2px}
-.go:disabled{opacity:.45;cursor:default}
+.go:disabled{opacity:.4;cursor:default}
 .hit{position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;background:transparent;color:transparent;cursor:pointer}
 .hit:focus{outline:2px solid #fff;outline-offset:-3px;border-radius:18px}
 </style>
@@ -42,10 +40,17 @@ body{font:13px/1.3 -apple-system,system-ui,sans-serif;color:#fff;-webkit-user-se
   var api = window.RexWidget;
   function el(id) { return document.getElementById(id); }
   var current = null;
+  var tint = '';
 
-  function openList() {
-    if (!api) return;
-    api.open('list').catch(function () { el('meta').textContent = '暂时打不开列表'; });
+  // 宿主取色：封面的主色压暗成渐变铺底，白字始终有对比度；拿不到就退回深灰
+  function paint() {
+    var hero = el('hero');
+    var style = tint && api && api.artwork ? api.artwork(tint) : null;
+    var hex = style && style.background ? String(style.background).replace('#', '') : '';
+    var m = /^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+    if (!m) return;
+    var rgb = parseInt(m[1], 16) + ',' + parseInt(m[2], 16) + ',' + parseInt(m[3], 16);
+    hero.style.background = 'linear-gradient(100deg, rgba(' + rgb + ',.95), rgba(0,0,0,.78))';
   }
 
   function render() {
@@ -53,13 +58,19 @@ body{font:13px/1.3 -apple-system,system-ui,sans-serif;color:#fff;-webkit-user-se
     var items = page && page.items ? page.items : [];
     current = items[0] || null;
     var src = current && (current.posterPath || current.detailPoster || current.coverUrl);
+    if (src && src !== tint) {
+      tint = src;
+      paint();
+    }
     if (src) el('cover').setAttribute('src', src);
     else el('cover').removeAttribute('src');
     el('label').textContent = items.length ? '每日推荐 · ' + items.length + ' 首' : '每日推荐';
     el('title').textContent = current ? (current.title || '今天的推荐') : '今天的推荐';
     var artist = current && current.description ? String(current.description) : '';
     el('meta').textContent = artist || '每天换一批，按你的口味排';
-    el('go').disabled = !current || !api.canOpen || !api.canOpen('list');
+    var go = el('go');
+    go.textContent = items.length ? '查看全部 ' + items.length + ' 首' : '查看全部';
+    go.disabled = !current || !api.canOpen || !api.canOpen('list');
     el('hit').disabled = !current || !api.canOpen || !api.canOpen('item', current.id);
   }
 
@@ -79,11 +90,13 @@ body{font:13px/1.3 -apple-system,system-ui,sans-serif;color:#fff;-webkit-user-se
   });
   el('go').addEventListener('click', function (event) {
     event.stopPropagation();
-    openList();
+    if (!api) return;
+    api.open('list').catch(function () { el('meta').textContent = '暂时打不开列表'; });
   });
 
   if (!api) return;
   api.onContentChanged(render);
+  if (api.onArtworkChanged) api.onArtworkChanged(paint);
   api.onLayoutChanged(resize);
   resize();
   render();
