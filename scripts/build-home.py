@@ -21,7 +21,7 @@ SCRIPT_URL = "https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@{sha}/dist/qishui.js"
 BUNDLE_ID = "qishui.music"
 
 # 行标题由宿主渲染，改不了缩进；卡片内容都缩进了 16pt，标题前面补个宽度固定的空格跟上
-SHIFT = ""  # 行标题由宿主绘制，箭头贴行右边缘不随文字移动；加空格只会让标题彼此错位
+SHIFT = "\u2003"  # 宿主把行标题贴最左边（0pt）画，卡片内容缩进 16pt；em space 约一个字号宽，把标题推过去对齐箭头不动
 
 # (行 id, 标题, style, gridSize, functionId, htmlTemplate)
 # 一行一个样：大卡 → 两列列表 → 压字方卡 → 两列列表 → 榜单小卡 → 两列列表 → 压字方卡 → 圆头像
@@ -35,10 +35,6 @@ ROWS = [
     ("home-albums", "热门专辑", "fullWidthPoster", [-1, 1.8], "loadAlbums", "tile-rail.html"),
     ("home-artists", "热门歌手", "fullWidthPoster", [-1, 1.8], "loadArtists", "artist-circle.html"),
 ]
-
-
-# 这几个卡片自己留了 16pt 左右边距，行标题跟着右移
-INDENTED = {"hero-daily.html", "list-grid.html"}
 
 
 def script_url() -> str:
@@ -72,7 +68,7 @@ def main() -> None:
     layout = [
         {
             "id": row_id,
-            "title": (SHIFT + title) if tpl in INDENTED else title,
+            "title": SHIFT + title,
             "isActive": True,
             "items": [card(row_id, style, grid, fn, tpl)],
         }
