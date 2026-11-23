@@ -507,38 +507,12 @@ export async function handleLogin(): Promise<VideoItem[]> {
   return [toRexQr(ticket.qr, "用汽水音乐 App 扫码登录")];
 }
 
-/** 歌单卡片本身不可播放，播放器拿不到「接下来」队列；补一段歌曲流让它能直接开播 */
-async function playlistSongs(rows: Json[], perList = 20, total = 60): Promise<VideoItem[]> {
-  const groups = await Promise.all(
-    rows.slice(0, 4).map(async (row) => {
-      const base = row.base_info ?? {};
-      const id = String(base.id ?? "");
-      if (!id) return [] as Json[];
-      const result = await accountPlaylistTracks(id, String(base.owner_id ?? ""), perList).catch(() => ({ entities: [] as Json[] }));
-      return result.entities ?? [];
-    }),
-  );
-  const seen = new Set<string>();
-  const out: VideoItem[] = [];
-  for (const entity of groups.flat()) {
-    const ref = trackRef(entity);
-    if (!ref.id || seen.has(ref.id)) continue;
-    seen.add(ref.id);
-    out.push(toRexTrack(ref));
-    if (out.length >= total) break;
-  }
-  return out;
-}
-
 export async function handleMyPlaylists(count = 50): Promise<VideoItem[]> {
   if (!getAccount()) return [loginPrompt()];
   try {
     const rows = await myPlaylists(count);
     if (!rows.length) return [noticeItem("还没有歌单", "账号里没有自建或收藏的歌单")];
-    const playlists = rows.map(toRexPlaylist);
-    const songs = await playlistSongs(rows).catch(() => [] as VideoItem[]);
-    // 歌曲放最前面：宿主只按列表开头的歌曲建队列，卡片垫在后面仍可点进歌单
-    return [...songs, ...playlists];
+    return rows.map(toRexPlaylist);
   } catch (error) {
     return [noticeItem("歌单读取失败", String((error as Error).message ?? error).slice(0, 90))];
   }
