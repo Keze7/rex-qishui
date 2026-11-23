@@ -21,7 +21,7 @@ SCRIPT_URL = "https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@{sha}/dist/qishui.js"
 BUNDLE_ID = "qishui.music"
 
 # 行标题由宿主渲染，改不了缩进；卡片内容都缩进了 16pt，标题前面补个宽度固定的空格跟上
-SHIFT = "\u2003"  # 宿主把行标题贴最左边（0pt）画，卡片内容缩进 16pt；em space 约一个字号宽，把标题推过去对齐箭头不动
+SHIFT = "\u2003"  # 宿主只给横滑行加 16pt 内边距，全宽行的标题贴 0pt；em space ≈ 一个字号宽，正好补这 16pt
 
 # (行 id, 标题, style, gridSize, functionId, htmlTemplate)
 # 一行一个样：大卡 → 两列列表 → 压字方卡 → 两列列表 → 榜单小卡 → 两列列表 → 压字方卡 → 圆头像
@@ -35,6 +35,10 @@ ROWS = [
     ("home-albums", "热门专辑", "fullWidthPoster", [-1, 1.8], "loadAlbums", "tile-rail.html"),
     ("home-artists", "热门歌手", "fullWidthPoster", [-1, 1.8], "loadArtists", "artist-circle.html"),
 ]
+
+
+# 全宽卡片（标题贴屏幕边）才需要位移；横滑行的标题宿主已经缩进过
+FLUSH_ROWS = {"hero-daily.html", "list-grid.html"}
 
 
 def script_url() -> str:
@@ -68,7 +72,7 @@ def main() -> None:
     layout = [
         {
             "id": row_id,
-            "title": SHIFT + title,
+            "title": (SHIFT + title) if tpl in FLUSH_ROWS else title,
             "isActive": True,
             "items": [card(row_id, style, grid, fn, tpl)],
         }
