@@ -228,7 +228,7 @@ function v(e) {
         return t;
     }(e));
 }
-function b(e, t) {
+function _(e, t) {
     let n = i(o(t)), l = r(e, 32), a = r(f(n, 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n), 32), c = Array(32).fill(1), s = Array(32).fill(0);
     s = u(s, c.concat([
         0
@@ -239,15 +239,15 @@ function b(e, t) {
     for(; !((v = i(c = u(s, c))) > 0n) || !(v < 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n);)s = u(s, c.concat([
         0
     ])), c = u(s, c);
-    let b = f(m(p({
+    let _ = f(m(p({
         x: 0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296n,
         y: 0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5n,
         z: 1n
-    }, v)).x, 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n), _ = f(d(v, 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n) * (n + b * e), 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n);
-    if (0n === b || 0n === _) throw Error("invalid signature");
-    return y(0x30, h(r(b, 32)), h(r(_, 32)));
+    }, v)).x, 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n), b = f(d(v, 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n) * (n + _ * e), 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n);
+    if (0n === _ || 0n === b) throw Error("invalid signature");
+    return y(0x30, h(r(_, 32)), h(r(b, 32)));
 }
-function _(e, t, n, r, i, l, a) {
+function b(e, t, n, r, i, l, a) {
     try {
         var o = e[l](a), u = o.value;
     } catch (e) {
@@ -262,16 +262,16 @@ function g(e) {
         return new Promise(function(r, i) {
             var l = e.apply(t, n);
             function a(e) {
-                _(l, r, i, a, o, "next", e);
+                b(l, r, i, a, o, "next", e);
             }
             function o(e) {
-                _(l, r, i, a, o, "throw", e);
+                b(l, r, i, a, o, "throw", e);
             }
             a(void 0);
         });
     };
 }
-function k(e) {
+function x(e) {
     for(var t = 1; t < arguments.length; t++){
         var n = null != arguments[t] ? arguments[t] : {}, r = Object.keys(n);
         "function" == typeof Object.getOwnPropertySymbols && (r = r.concat(Object.getOwnPropertySymbols(n).filter(function(e) {
@@ -288,7 +288,7 @@ function k(e) {
     }
     return e;
 }
-function x(e, t) {
+function k(e, t) {
     return t = null != t ? t : {}, Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : (function(e) {
         var t = Object.keys(e);
         if (Object.getOwnPropertySymbols) {
@@ -321,7 +321,7 @@ let S = "/api/luna/v1/platform", w = "aw4bbxfujo741d09", $ = "127065153222175016
     ac: "wifi"
 };
 function D(e) {
-    let t = k(x(k({}, j), {
+    let t = x(k(x({}, j), {
         device_id: $,
         did: $,
         iid: $,
@@ -340,10 +340,10 @@ function A(e) {
 function C(e) {
     return g(function*(e, t = {}) {
         var n, r, i, l;
-        let a = yield Widget.http.request(x(k({
+        let a = yield Widget.http.request(k(x({
             url: e,
             method: null != (n = t.method) ? n : "GET",
-            headers: k({
+            headers: x({
                 "user-agent": "LunaOpenSDK/1.0.10"
             }, null != (r = t.headers) ? r : {})
         }, void 0 !== t.data ? {
@@ -372,7 +372,7 @@ function E(e) {
     let i = Number(null != (t = null != (n = null == e ? void 0 : e.err_no) ? n : null == e || null == (r = e.data) ? void 0 : r.error_code) ? t : 0);
     if (i) throw Error(`汽水账号接口错误 ${i}${(null == e ? void 0 : e.err_msg) ? `：${e.err_msg}` : ""}`);
 }
-function I(e) {
+function q(e) {
     try {
         var t, n;
         return null != (t = null == (n = Widget.storage) ? void 0 : n.get(e)) ? t : null;
@@ -380,20 +380,20 @@ function I(e) {
         return null;
     }
 }
-function M(e, t) {
+function I(e, t) {
     try {
         var n;
         null == (n = Widget.storage) || n.set(e, t);
     } catch (e) {}
 }
-function z(e) {
+function M(e) {
     try {
         var t;
         null == (t = Widget.storage) || t.remove(e);
     } catch (e) {}
 }
-function q() {
-    let e = I(O);
+function z() {
+    let e = q(O);
     return e && e.ticket && e.key ? e : null;
 }
 function B() {
@@ -416,8 +416,8 @@ function B() {
     return t.join("&");
 }
 function T() {
-    let e = I(P);
-    return !e || e.expiresAt < Date.now() ? null : e;
+    let e = q(P);
+    return !e || !e.qr || e.expiresAt < Date.now() ? null : e;
 }
 function U(t, r, i) {
     return g(function*() {
@@ -429,7 +429,7 @@ function U(t, r, i) {
             device_platform: "android"
         })}`, c = yield C(u, {
             method: "POST",
-            headers: k({
+            headers: x({
                 "content-type": "application/x-www-form-urlencoded",
                 "bd-ticket-guard-version": "1"
             }, i.csr ? {
@@ -487,7 +487,7 @@ function U(t, r, i) {
 }
 let R = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 function F(t, r) {
-    let i = Math.floor(Date.now() / 1000), l = `ticket=${t.ticket}&path=${S}${r}&timestamp=${i}`, a = n(b(BigInt(`0x${t.key}`), e(l)));
+    let i = Math.floor(Date.now() / 1000), l = `ticket=${t.ticket}&path=${S}${r}&timestamp=${i}`, a = n(_(BigInt(`0x${t.key}`), e(l)));
     return n(e(JSON.stringify({
         ts_sign: t.tsSign,
         req_content: "ticket,path,timestamp",
@@ -499,7 +499,7 @@ let L = null;
 function W(e) {
     return g(function*(e, t = {}) {
         var n, r;
-        let i = q();
+        let i = z();
         if (!i) throw Error("未登录");
         let l = yield i.expiresAt - Date.now() > 3600000 ? Promise.resolve(i) : L || (L = g(function*() {
             var e;
@@ -509,10 +509,10 @@ function W(e) {
             E(t.data);
             let n = (null == (e = t.data) ? void 0 : e.data) || t.data, r = yield U(n, i.key, {
                 cert: i.cert
-            }), l = x(k({}, i, r), {
+            }), l = k(x({}, i, r), {
                 accessCode: String(n.access_code || i.accessCode)
             });
-            return M(O, l), l;
+            return I(O, l), l;
         })().finally(()=>{
             L = null;
         })), a = yield C(`https://open.douyin.com${S}${e}?${D({})}`, {
@@ -524,7 +524,7 @@ function W(e) {
                 "bd-ticket-guard-client-cert": l.cert,
                 "bd-ticket-guard-client-data": F(l, e)
             },
-            data: JSON.stringify(x(k({}, t), {
+            data: JSON.stringify(k(x({}, t), {
                 common_params: {
                     user_id: l.userId
                 }
@@ -846,7 +846,7 @@ function ev(e) {
         });
     };
 }
-function eb(e) {
+function e_(e) {
     for(var t = 1; t < arguments.length; t++){
         var n = null != arguments[t] ? arguments[t] : {}, r = Object.keys(n);
         "function" == typeof Object.getOwnPropertySymbols && (r = r.concat(Object.getOwnPropertySymbols(n).filter(function(e) {
@@ -863,7 +863,7 @@ function eb(e) {
     }
     return e;
 }
-function e_(e, t) {
+function eb(e, t) {
     return t = null != t ? t : {}, Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : (function(e) {
         var t = Object.keys(e);
         if (Object.getOwnPropertySymbols) {
@@ -876,10 +876,10 @@ function e_(e, t) {
     }), e;
 }
 let eg = "qishui:";
-function ek(e, t = "") {
+function ex(e, t = "") {
     return `${eg}playlist:${e}:${t}`;
 }
-function ex(e) {
+function ek(e) {
     return `${eg}scene:${e}`;
 }
 function eS(e) {
@@ -908,7 +908,7 @@ function e$(e) {
         e.album,
         ew(e.durationMs)
     ].filter(Boolean).join(" · ");
-    return eb({
+    return e_({
         id: e.id,
         type: "url",
         mediaType: "song",
@@ -928,7 +928,7 @@ function eP(e) {
         e.trackCount ? `${e.trackCount} 首` : "",
         e.albumCount ? `${e.albumCount} 张专辑` : ""
     ].filter(Boolean).join(" · ");
-    return eb({
+    return e_({
         id: e.id,
         type: "person",
         mediaType: "person",
@@ -951,7 +951,7 @@ function ej(e) {
         e.trackCount ? `${e.trackCount} 首` : "",
         null != (t = e.releaseDate) ? t : ""
     ].filter(Boolean).join(" · ");
-    return eb({
+    return e_({
         id: e.id,
         type: "url",
         mediaType: "album",
@@ -1009,11 +1009,11 @@ function eN(e) {
         s ? `${s} 收藏` : "",
         p ? `${p} 首` : ""
     ].filter(Boolean).join(" · ");
-    return eb({
+    return e_({
         id: `playlist-${f.id}`,
         type: "url",
         mediaType: "playlist",
-        link: ek(String(f.id), String(null != (i = f.owner_id) ? i : "")),
+        link: ex(String(f.id), String(null != (i = f.owner_id) ? i : "")),
         title: String(null != (l = null != (a = f.title) ? a : f.name) ? l : "歌单")
     }, m ? {
         subtitle: m
@@ -1027,8 +1027,8 @@ function eE(e, t = 10) {
         return (yield ea(e, t)).map(eN);
     })();
 }
-let eI = /歌手|歌曲|热门|榜单|合集|未知|^\s*$/;
-function eM(e) {
+let eq = /歌手|歌曲|热门|榜单|合集|未知|^\s*$/;
+function eI(e) {
     return ev(function*() {
         let [t, n] = yield Promise.all([
             Y(function*() {
@@ -1051,7 +1051,7 @@ function eM(e) {
             r.length ? `${r.length} 首热门` : "",
             t.albumCount ? `${t.albumCount} 张专辑` : ""
         ].filter(Boolean).join(" · ");
-        return e_(eb({}, eP(t), i ? {
+        return eb(e_({}, eP(t), i ? {
             subtitle: i
         } : {}, t.intro ? {
             description: t.intro.slice(0, 300)
@@ -1060,13 +1060,13 @@ function eM(e) {
         });
     })();
 }
-let ez = /^\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\](.*)$/, eq = /^\[(\d+),(\d+)\](.*)$/, eB = /<\d+,\d+(?:,\d+)?>/g;
+let eM = /^\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\](.*)$/, ez = /^\[(\d+),(\d+)\](.*)$/, eB = /<\d+,\d+(?:,\d+)?>/g;
 function eT(e) {
     let t = [];
     for (let n of String(null != e ? e : "").split(/\r?\n/)){
         let e = n.trim();
         if (!e) continue;
-        let r = ez.exec(e);
+        let r = eM.exec(e);
         if (r) {
             let [, e, n, i = "0", l] = r, a = 60000 * Number(e) + 1000 * Number(n) + Number(i.padEnd(3, "0").slice(0, 3));
             t.push({
@@ -1075,7 +1075,7 @@ function eT(e) {
             });
             continue;
         }
-        let i = eq.exec(e);
+        let i = ez.exec(e);
         i && t.push({
             ms: Number(i[1]),
             text: i[3].replace(eB, "").trim()
@@ -1119,7 +1119,7 @@ function eJ(e) {
         e.vip ? "VIP" : "普通账号",
         e.userId
     ].filter(Boolean).join(" · ");
-    return e_(eb(e_(eb({
+    return eb(e_(eb(e_({
         id: "my-account",
         type: "url",
         link: eW,
@@ -1142,7 +1142,7 @@ function eJ(e) {
     });
 }
 function eY(e, t, n) {
-    return eb({
+    return e_({
         id: "my-notice",
         type: "url",
         link: eW,
@@ -1159,9 +1159,10 @@ function eG(e, t) {
         type: "url",
         link: eW,
         title: t,
-        subtitle: "扫码并在手机上确认后，回到首页下拉刷新",
+        subtitle: "点开这一条看大图，用汽水音乐 App 扫码",
         description: "二维码 5 分钟内有效。登录态只保存在本机，不会上传到任何服务器。",
         posterPath: e,
+        detailPoster: e,
         coverUrl: e
     };
 }
@@ -1170,7 +1171,7 @@ function eH() {
 }
 function eK() {
     return ev(function*() {
-        let t = q();
+        let t = z();
         if (t) return [
             eJ(t)
         ];
@@ -1189,7 +1190,7 @@ function eK() {
                 if ("scanned" === u) return {
                     state: "scanned"
                 };
-                if ("expired" === u || "refused" === u) return z(P), {
+                if ("expired" === u || "refused" === u) return M(P), {
                     state: "expired"
                 };
                 if ("confirmed" !== u) return {
@@ -1219,13 +1220,13 @@ function eK() {
                 E(p.data);
                 let m = null == (l = p.data) || null == (i = l.data) ? void 0 : i.my_info;
                 if (!(null == m ? void 0 : m.id)) throw Error("账号信息读取失败");
-                let y = x(k({}, s), {
+                let y = k(x({}, s), {
                     userId: String(m.id),
                     nickname: String(null != (t = m.nickname) ? t : ""),
                     avatar: String(m.medium_avatar_url || m.avatar_url || ""),
                     vip: !0 === m.is_vip
                 });
-                return M(O, y), z(P), {
+                return I(O, y), M(P), {
                     state: "done",
                     account: y
                 };
@@ -1236,13 +1237,13 @@ function eK() {
                 eJ(e.account)
             ];
             if ("expired" !== e.state) return [
-                eG(l.image, "scanned" === e.state ? "已扫码，请在手机上点确认" : "用汽水音乐 App 扫码登录")
+                eG(l.qr, "scanned" === e.state ? "已扫码，请在手机上点确认" : "用汽水音乐 App 扫码登录")
             ];
         }
         return [
             eG((yield g(function*() {
-                var t;
-                let l = function() {
+                var t, l;
+                let a = function() {
                     let e = [];
                     for(let t = 0; t < 16; t++)e.push(Math.floor(4294967296 * Math.random()));
                     for(let t = 0; t < 8; t++)e.push(Math.floor(Date.now() % 4294967296));
@@ -1258,7 +1259,7 @@ function eK() {
                         ]))), n++;
                     }
                     return i(t) % (0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n - 1n) + 1n;
-                }(), a = function(t) {
+                }(), u = function(t) {
                     var i;
                     let l, a = m(p({
                         x: 0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296n,
@@ -1273,25 +1274,40 @@ function eK() {
                     ], y(0x30, y(0x30, v("2a8648ce3d0201"), v("2a8648ce3d030107")), y(0x03, [
                         0x00,
                         ...l
-                    ]))), y(0xa0)), f = b(t, c), d = y(0x30, c, y(0x30, v("2a8648ce3d040302")), y(0x03, [
+                    ]))), y(0xa0)), f = _(t, c), d = y(0x30, c, y(0x30, v("2a8648ce3d040302")), y(0x03, [
                         0x00,
                         ...f
                     ])), s = `-----BEGIN CERTIFICATE REQUEST-----\n${null == (i = n(d).match(/.{1,64}/g)) ? void 0 : i.join("\n")}\n-----END CERTIFICATE REQUEST-----\n`;
                     return n(e(s));
-                }(l), u = null == (t = (yield C(`https://open.douyin.com/oauth/get_qrcode/?${B()}`)).data) ? void 0 : t.data;
-                if (!(null == u ? void 0 : u.token) || !(null == u ? void 0 : u.qrcode)) throw Error("二维码生成失败，请稍后重试");
-                let c = Date.now() + 300000, f = `data:image/png;base64,${u.qrcode}`;
-                return M(P, {
-                    token: String(u.token),
-                    key: l.toString(16),
-                    csr: a,
-                    image: f,
-                    expiresAt: c
+                }(a), c = null == (t = (yield C(`https://open.douyin.com/oauth/get_qrcode/?${B()}`)).data) ? void 0 : t.data;
+                if (!(null == c ? void 0 : c.token) || !(null == c ? void 0 : c.qrcode_index_url)) throw Error("二维码生成失败，请稍后重试");
+                let f = Date.now() + 300000, d = yield (l = String(c.qrcode_index_url), g(function*() {
+                    let e = encodeURIComponent(l), t = [
+                        `https://quickchart.io/qr?text=${e}&size=600&margin=1&ecLevel=M&format=png`,
+                        `https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=8&ecc=M&data=${e}`
+                    ];
+                    for (let e of t)try {
+                        var n;
+                        if ((null != (n = (yield Widget.http.request({
+                            url: e,
+                            method: "GET",
+                            decodable: !1,
+                            timeout: 15
+                        })).statusCode) ? n : 0) === 200) return e;
+                    } catch (e) {}
+                    return t[0];
+                })());
+                return I(P, {
+                    token: String(c.token),
+                    key: a.toString(16),
+                    csr: u,
+                    qr: d,
+                    expiresAt: f
                 }), {
-                    image: f,
-                    expiresAt: c
+                    qr: d,
+                    expiresAt: f
                 };
-            })()).image, "用汽水音乐 App 扫码登录")
+            })()).qr, "用汽水音乐 App 扫码登录")
         ];
     })();
 }
@@ -1476,7 +1492,7 @@ WidgetMetadata = {
     })(), loadMyPlaylists = ()=>eV(function*() {
         return function(e = 50) {
             return ev(function*() {
-                if (!q()) return [
+                if (!z()) return [
                     eH()
                 ];
                 try {
@@ -1513,7 +1529,7 @@ WidgetMetadata = {
     })(), loadRecentPlayed = ()=>eV(function*() {
         return function(e = 50) {
             return ev(function*() {
-                if (!q()) return [
+                if (!z()) return [
                     eH()
                 ];
                 try {
@@ -1530,7 +1546,7 @@ WidgetMetadata = {
                                 });
                                 for (let n of Array.isArray(l.media) ? l.media : []){
                                     let r = null == n ? void 0 : n.media;
-                                    if ((null == r ? void 0 : r.track_entity) && (t.push(x(k({}, r.track_entity), {
+                                    if ((null == r ? void 0 : r.track_entity) && (t.push(k(x({}, r.track_entity), {
                                         playedAt: Number(null != (i = n.play_start_timestamp) ? i : 0)
                                     })), t.length >= e)) break;
                                 }
@@ -1555,7 +1571,7 @@ WidgetMetadata = {
             })();
         }();
     })(), logoutAccount = ()=>eV(function*() {
-        return z(O), z(P), {
+        return M(O), M(P), {
             message: "已退出登录",
             refresh: !0
         };
@@ -1578,11 +1594,11 @@ WidgetMetadata = {
                         ];
                     });
                 });
-            })()).map((e)=>(eO.set(e.id, e.name), eb({
+            })()).map((e)=>(eO.set(e.id, e.name), e_({
                     id: `scene-${e.id}`,
                     type: "url",
                     mediaType: "playlist",
-                    link: ex(e.id),
+                    link: ek(e.id),
                     title: e.name
                 }, e.group ? {
                     subtitle: e.group
@@ -1613,7 +1629,7 @@ WidgetMetadata = {
                 var t, n;
                 let r = String(null != (t = null != (n = e.peopleId) ? n : e.id) ? t : "").trim();
                 return /^\d{1,30}$/.test(r) ? [
-                    (yield eM(r))
+                    (yield eI(r))
                 ] : function(e = 18) {
                     return ev(function*() {
                         let t = yield Promise.all([
@@ -1623,7 +1639,7 @@ WidgetMetadata = {
                         ].map((e)=>eo(e, 10).catch(()=>[]))), n = new Set(), r = [];
                         for (let i of t.flat()){
                             let t = eu(i);
-                            if (!(!t.id || n.has(t.id) || eI.test(t.name)) && !(t.name.length > 20) && !(t.trackCount < 1) && (n.add(t.id), r.push(eP(t)), r.length >= e)) break;
+                            if (!(!t.id || n.has(t.id) || eq.test(t.name)) && !(t.name.length > 20) && !(t.trackCount < 1) && (n.add(t.id), r.push(eP(t)), r.length >= e)) break;
                         }
                         return r;
                     })();
@@ -1739,7 +1755,7 @@ WidgetMetadata = {
                     ew(n.durationMs),
                     r.preview ? "仅试听片段" : ""
                 ].filter(Boolean).join(" · ");
-                return e_(eb({}, e$(n), i ? {
+                return eb(e_({}, e$(n), i ? {
                     description: i
                 } : {}), {
                     videoUrl: r.url
@@ -1751,14 +1767,14 @@ WidgetMetadata = {
                     id: `scene-${n}`,
                     type: "url",
                     mediaType: "playlist",
-                    link: ex(n),
+                    link: ek(n),
                     title: null != (e = eO.get(n)) ? e : "场景推荐",
                     description: `${t.length} 首`,
                     tracks: t
                 };
-            })()) : "artist" === a.kind ? eM(a.id) : "album" === a.kind ? (r = a.id, ev(function*() {
+            })()) : "artist" === a.kind ? eI(a.id) : "album" === a.kind ? (r = a.id, ev(function*() {
                 let { album: e, entities: t } = yield ef(r), n = ec(e);
-                return e_(eb({}, ej(n), n.intro ? {
+                return eb(e_({}, ej(n), n.intro ? {
                     description: n.intro.slice(0, 300)
                 } : {}), {
                     tracks: t.map((e)=>e$(ey(e)))
@@ -1794,7 +1810,7 @@ WidgetMetadata = {
                         })();
                     }(i, l);
                 } catch (e) {
-                    if (!q()) throw Error("这个歌单打不开：车机接口只开放自建与抖音收藏的歌单");
+                    if (!z()) throw Error("这个歌单打不开：车机接口只开放自建与抖音收藏的歌单");
                     f = yield (function(e, t = "", n = 200) {
                         return g(function*() {
                             let r, i = [], l = "0";
@@ -1824,19 +1840,19 @@ WidgetMetadata = {
                         throw Error("这个歌单打不开：车机接口不给收藏来的歌单");
                     });
                 }
-                let { playlist: d, entities: s } = f, p = s.map((e)=>e$(ey(e))), m = null != (e = null == d ? void 0 : d.base_info) ? e : {}, y = X(null == d || null == (a = d.display_info) ? void 0 : a.url_cover), h = null == d || null == (u = d.relation_info) || null == (o = u.owner) ? void 0 : o.name, v = eC(Number(null != (t = null == d || null == (c = d.stats) ? void 0 : c.count_collected) ? t : 0)), b = [
+                let { playlist: d, entities: s } = f, p = s.map((e)=>e$(ey(e))), m = null != (e = null == d ? void 0 : d.base_info) ? e : {}, y = X(null == d || null == (a = d.display_info) ? void 0 : a.url_cover), h = null == d || null == (u = d.relation_info) || null == (o = u.owner) ? void 0 : o.name, v = eC(Number(null != (t = null == d || null == (c = d.stats) ? void 0 : c.count_collected) ? t : 0)), _ = [
                     h,
                     v ? `${v} 收藏` : "",
                     p.length ? `${p.length} 首` : ""
                 ].filter(Boolean).join(" · ");
-                return e_(eb({
+                return eb(e_({
                     id: i,
                     type: "url",
                     mediaType: "playlist",
-                    link: ek(i, l),
+                    link: ex(i, l),
                     title: String(null != (n = null != (r = m.title) ? r : m.name) ? n : "歌单")
-                }, b ? {
-                    subtitle: b
+                }, _ ? {
+                    subtitle: _
                 } : {}, m.desc ? {
                     description: String(m.desc).slice(0, 200)
                 } : {}, y ? {

@@ -150,8 +150,8 @@ export function logout(): void {
 // ---------- 登录 ----------
 
 export interface LoginTicket {
-  /** 二维码图片，data URL */
-  image: string;
+  /** 二维码图片的 https 地址（Rex 不渲染 data URI，只能借在线生成） */
+  qr: string;
   expiresAt: number;
 }
 
@@ -179,37 +179,59 @@ function qrParams(): string {
   return parts.join("&");
 }
 
+/**
+ * 二维码内容就是接口给的 `qrcode_index_url`（aweme:// 深链）——官方那张 PNG 解出来一模一样。
+ * Rex 的图片位只吃 http(s)，data URI 会渲染成裂图，所以交给在线生成服务出图。
+ */
+async function qrImageUrl(payload: string): Promise<string> {
+  const text = encodeURIComponent(payload);
+  const providers = [
+    `https://quickchart.io/qr?text=${text}&size=600&margin=1&ecLevel=M&format=png`,
+    `https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=8&ecc=M&data=${text}`,
+  ];
+  for (const url of providers) {
+    try {
+      const res = await Widget.http.request({ url, method: "GET", decodable: false, timeout: 15 });
+      if ((res.statusCode ?? 0) === 200) return url;
+    } catch {
+      /* 换下一家 */
+    }
+  }
+  return providers[0];
+}
+
 /** 生成二维码并暂存私钥，等用户回来看结果 */
 export async function startLogin(): Promise<LoginTicket> {
   const key = randomScalar();
   const csr = buildCsr(key);
   const result = await raw(`https://open.douyin.com/oauth/get_qrcode/?${qrParams()}`);
   const data = result.data?.data;
-  if (!data?.token || !data?.qrcode) throw new Error("二维码生成失败，请稍后重试");
+  if (!data?.token || !data?.qrcode_index_url) throw new Error("二维码生成失败，请稍后重试");
   const expiresAt = Date.now() + QR_TTL_MS;
-  const image = `data:image/png;base64,${data.qrcode}`;
+  const qr = await qrImageUrl(String(data.qrcode_index_url));
   // 图片一起存下来，重开模块不用重新生成二维码
   storeSet(PENDING_KEY, {
     token: String(data.token),
     key: key.toString(16),
     csr,
-    image,
+    qr,
     expiresAt,
   });
-  return { image, expiresAt };
+  return { qr, expiresAt };
 }
 
 interface Pending {
   token: string;
   key: string;
   csr: string;
-  image: string;
+  qr: string;
   expiresAt: number;
 }
 
 export function pendingLogin(): Pending | null {
   const pending = storeGet<Pending>(PENDING_KEY);
-  if (!pending || pending.expiresAt < Date.now()) return null;
+  // 老版本存的是 data URI，渲染不出来，当作过期重来
+  if (!pending || !pending.qr || pending.expiresAt < Date.now()) return null;
   return pending;
 }
 

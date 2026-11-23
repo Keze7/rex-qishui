@@ -468,16 +468,17 @@ function noticeItem(title: string, subtitle?: string, description?: string): Vid
   };
 }
 
-function toRexQr(image: string, title: string): VideoItem {
+function toRexQr(qr: string, title: string): VideoItem {
   return {
     id: "login-qr",
     type: "url",
     link: LOGIN_LINK,
     title,
-    subtitle: "扫码并在手机上确认后，回到首页下拉刷新",
+    subtitle: "点开这一条看大图，用汽水音乐 App 扫码",
     description: "二维码 5 分钟内有效。登录态只保存在本机，不会上传到任何服务器。",
-    posterPath: image,
-    coverUrl: image,
+    posterPath: qr,
+    detailPoster: qr,
+    coverUrl: qr,
   };
 }
 
@@ -494,11 +495,11 @@ export async function handleLogin(): Promise<VideoItem[]> {
     const result = await checkLogin().catch(() => ({ state: "waiting" as const }));
     if (result.state === "done" && result.account) return [toRexAccount(result.account)];
     if (result.state !== "expired") {
-      return [toRexQr(pending.image, result.state === "scanned" ? "已扫码，请在手机上点确认" : "用汽水音乐 App 扫码登录")];
+      return [toRexQr(pending.qr, result.state === "scanned" ? "已扫码，请在手机上点确认" : "用汽水音乐 App 扫码登录")];
     }
   }
   const ticket = await startLogin();
-  return [toRexQr(ticket.image, "用汽水音乐 App 扫码登录")];
+  return [toRexQr(ticket.qr, "用汽水音乐 App 扫码登录")];
 }
 
 export async function handleMyPlaylists(count = 50): Promise<VideoItem[]> {
