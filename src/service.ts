@@ -492,8 +492,11 @@ export async function handleLogin(): Promise<VideoItem[]> {
   if (account) return [toRexAccount(account)];
   const pending = pendingLogin();
   if (pending) {
-    const result = await checkLogin().catch(() => ({ state: "waiting" as const }));
+    const result = await checkLogin().catch((error) => ({ state: "unknown" as const, debug: String((error as Error)?.message ?? error) }));
     if (result.state === "done" && result.account) return [toRexAccount(result.account)];
+    if (result.state === "unknown") {
+      return [noticeItem("登录没走完（把这段发我）", result.debug ?? "没有详情")];
+    }
     if (result.state !== "expired") {
       return [toRexQr(pending.qr, result.state === "scanned" ? "已扫码，请在手机上点确认" : "用汽水音乐 App 扫码登录")];
     }

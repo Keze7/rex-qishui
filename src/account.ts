@@ -310,52 +310,130 @@ function decodeBase64(text: string): number[] {
   return pad ? out.slice(0, out.length - pad) : out;
 }
 
-/** 查一次扫码状态；确认后落库并返回账号 */
-export async function checkLogin(): Promise<{ state: "waiting" | "scanned" | "expired" | "done"; account?: Account }> {
+export type LoginState = "waiting" | "scanned" | "confirmed" | "expired" | "done" | "unknown";
+
+export interface LoginResult {
+  state: LoginState;
+  account?: Account;
+  /** 卡住时把每一步的原始返回带上，用户截图就能定位 */
+  debug?: string;
+}
+
+/** 不同版本返回的 status 词不一样，全都归一化 */
+const LOGIN_STATUS: Record<string, LoginState> = {
+  new: "waiting",
+  init: "waiting",
+  scan: "scanned",
+  scanned: "scanned",
+  waiting_confirm: "scanned",
+  confirm: "confirmed",
+  confirmed: "confirmed",
+  expired: "expired",
+  cancel: "expired",
+  canceled: "expired",
+  refused: "expired",
+  refuse: "expired",
+};
+
+function clip(value: unknown, max = 160): string {
+  const text = typeof value === "string" ? value : JSON.stringify(value ?? null);
+  return text.length > max ? `${text.slice(0, max)}…` : text;
+}
+
+/** 从 redirect_url 之类的串里抠参数 */
+function param(url: unknown, name: string): string {
+  if (typeof url !== "string") return "";
+  const parts = url.split(/[?&]/);
+  for (const part of parts) {
+    const eq = part.indexOf("=");
+    if (eq > 0 && part.slice(0, eq) === name) return decodeURIComponent(part.slice(eq + 1));
+  }
+  return "";
+}
+
+/** 查一次扫码状态；确认后换票据落库 */
+export async function checkLogin(): Promise<LoginResult> {
   const pending = pendingLogin();
   if (!pending) return { state: "expired" };
   const result = await raw(
     `https://open.douyin.com/oauth/check_qrcode/?${qrParams()}&token=${encodeURIComponent(pending.token)}&timestamp=${Date.now()}`,
   );
   const data = result.data?.data;
-  const status = String(data?.status ?? "");
-  if (status === "new") return { state: "waiting" };
-  if (status === "scanned") return { state: "scanned" };
-  if (status === "expired" || status === "refused") {
+  const rawStatus = String(data?.status ?? "").toLowerCase();
+  const state = LOGIN_STATUS[rawStatus];
+  if (state === "expired") {
     storeRemove(PENDING_KEY);
     return { state: "expired" };
   }
-  if (status !== "confirmed") return { state: "waiting" };
-  const code = data?.code || data?.auth_code;
-  if (!code) throw new Error("授权码缺失，请重新扫码");
-  const accessResult = await raw(`https://open.qishui.com${PREFIX}/access/code/get/?${query({ auth_code: String(code) })}`);
-  checkBody(accessResult.data);
-  const access = accessResult.data?.data || accessResult.data;
-  const base = await fetchTicket(access, pending.key, { csr: pending.csr });
-  const meResult = await raw(`https://open.douyin.com${PREFIX}/me/info/?${query({})}`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "access-token": base.ticket,
-      "bd-ticket-guard-version": "1",
-      "bd-ticket-guard-client-cert": base.cert,
-      "bd-ticket-guard-client-data": clientData(base, "/me/info/"),
-    },
-    data: JSON.stringify({ common_params: {} }),
-  });
-  checkBody(meResult.data);
-  const info = meResult.data?.data?.my_info;
-  if (!info?.id) throw new Error("账号信息读取失败");
-  const account: Account = {
-    ...base,
-    userId: String(info.id),
-    nickname: String(info.nickname ?? ""),
-    avatar: String(info.medium_avatar_url || info.avatar_url || ""),
-    vip: info.is_vip === true,
-  };
-  saveAccount(account);
-  storeRemove(PENDING_KEY);
-  return { state: "done", account };
+  if (state === "waiting" || state === "scanned") return { state };
+  if (state !== "confirmed") {
+    return { state: "unknown", debug: `未知扫码状态「${rawStatus || "空"}」 ${clip(data)}` };
+  }
+  return redeem(data, pending);
+}
+
+/** confirmed 之后：授权码 → access_code → bd-ticket-guard 票据 → 账号信息 */
+async function redeem(data: any, pending: Pending): Promise<LoginResult> {
+  const trace: string[] = [`status=${String(data?.status)} keys=${Object.keys(data ?? {}).join(",")}`];
+  try {
+    let access: any = null;
+    if (data?.access_code) {
+      access = data;
+      trace.push("响应里直接带 access_code");
+    } else {
+      const code =
+        [data?.code, data?.auth_code, data?.access_token, data?.auth_token].find((v) => typeof v === "string" && v) ||
+        param(data?.redirect_url, "code") ||
+        param(data?.redirect_url, "auth_code");
+      if (!code) return { state: "unknown", debug: `没拿到授权码 · ${trace.join(" · ")} · ${clip(data, 200)}` };
+      // 参数名各版本不一样，按可能的名字依次试
+      let lastError: unknown = null;
+      for (const field of ["auth_code", "code"]) {
+        try {
+          const res = await raw(`https://open.qishui.com${PREFIX}/access/code/get/?${query({ [field]: String(code) })}`);
+          trace.push(`code/get(${field}) ${res.status} ${clip(res.data)}`);
+          checkBody(res.data);
+          access = res.data?.data || res.data;
+          break;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      if (!access) throw lastError instanceof Error ? lastError : new Error("授权码兑换失败");
+    }
+    if (!access?.access_code) throw new Error("access_code 缺失");
+    const base = await fetchTicket(access, pending.key, { csr: pending.csr });
+    trace.push(`ticket ok expires=${base.expiresAt}`);
+    const meResult = await raw(`https://open.douyin.com${PREFIX}/me/info/?${query({})}`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "access-token": base.ticket,
+        "bd-ticket-guard-version": "1",
+        "bd-ticket-guard-client-cert": base.cert,
+        "bd-ticket-guard-client-data": clientData(base, "/me/info/"),
+      },
+      data: JSON.stringify({ common_params: {} }),
+    });
+    checkBody(meResult.data);
+    const info = meResult.data?.data?.my_info;
+    trace.push(`me/info ${meResult.status} ${clip(meResult.data)}`);
+    if (!info?.id) throw new Error("账号信息读取失败");
+    const account: Account = {
+      ...base,
+      userId: String(info.id),
+      nickname: String(info.nickname ?? ""),
+      avatar: String(info.medium_avatar_url || info.avatar_url || ""),
+      vip: info.is_vip === true,
+    };
+    saveAccount(account);
+    storeRemove(PENDING_KEY);
+    if (!getAccount()) return { state: "unknown", debug: "票据拿到了但本地存不进去（Widget.storage 不可写）" };
+    return { state: "done", account };
+  } catch (error) {
+    const message = String((error as Error)?.message ?? error);
+    return { state: "unknown", debug: `${message} · ${trace.join(" · ")}` };
+  }
 }
 
 function clientData(account: Pick<Account, "key" | "ticket" | "tsSign">, path: string): string {
