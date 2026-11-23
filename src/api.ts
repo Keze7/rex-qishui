@@ -198,19 +198,85 @@ export async function artistTracks(id: string, count = 50): Promise<Json[]> {
   return Array.isArray(data.tracks) ? data.tracks : [];
 }
 
-export async function playlistTracks(id: string, ownerId = "", count = 100): Promise<{ playlist?: Json; entities: Json[] }> {
-  const data = await platform<Json>("/playlist/detail/", {
-    playlist_id: id,
-    owner_id: ownerId,
-    count,
-    cursor: "0",
-    type: null,
-  });
-  const rows: Json[] = Array.isArray(data.media_entities) ? data.media_entities : [];
+export interface AlbumRef {
+  id: string;
+  name: string;
+  cover?: string;
+  trackCount: number;
+  artists: string[];
+  releaseDate?: string;
+  intro?: string;
+}
+
+export function albumRef(entity: Json): AlbumRef {
+  const base = entity?.base_info ?? {};
+  const artists: string[] = Array.isArray(entity?.related_info?.artist_links)
+    ? entity.related_info.artist_links.map((item: Json) => String(item.name || "")).filter(Boolean)
+    : [];
+  const released = Number(base.release_date ?? 0);
   return {
-    playlist: data.playlist,
-    entities: rows.map((row) => row.entity?.track ?? row.entity?.media?.track_entity ?? row).filter(Boolean),
+    id: String(base.id ?? ""),
+    name: String(base.name ?? "未知专辑"),
+    cover: formatCover(entity?.display?.url_cover ?? entity?.display_info?.url_cover),
+    trackCount: Number(base.count_tracks ?? 0),
+    artists,
+    ...(released > 0 ? { releaseDate: new Date(released * 1000).toISOString().slice(0, 10) } : {}),
+    intro: base.intro ? String(base.intro) : undefined,
   };
+}
+
+/** 隐藏端点：SDK 未收录，但车机通道可用，返回 album_info + tracks */
+export async function albumDetail(id: string): Promise<{ album: Json; entities: Json[] }> {
+  const data = await platform<Json>("/album/detail/", { album_id: id });
+  const rows: Json[] = Array.isArray(data.tracks) ? data.tracks : [];
+  return { album: data.album_info ?? {}, entities: rows };
+}
+
+/** 专辑没有独立搜索，只能从曲目的 album_link 反推 */
+export function albumLinksOf(entities: Json[]): Array<{ id: string; name: string }> {
+  const seen = new Set<string>();
+  const out: Array<{ id: string; name: string }> = [];
+  for (const entity of entities) {
+    const link = entity?.related_info?.album_link;
+    const id = link?.id ? String(link.id) : "";
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push({ id, name: String(link.name ?? "未知专辑") });
+  }
+  return out;
+}
+
+/** 歌单分页：每页给 40~48 首，游标每次 +50，大歌单要循环拉 */
+export async function playlistTracks(
+  id: string,
+  ownerId = "",
+  limit = 200,
+): Promise<{ playlist?: Json; entities: Json[] }> {
+  const entities: Json[] = [];
+  let playlist: Json | undefined;
+  let cursor = "0";
+  for (let page = 0; page < 8; page++) {
+    const data = await platform<Json>("/playlist/detail/", {
+      playlist_id: id,
+      owner_id: ownerId,
+      count: 100,
+      cursor,
+      type: null,
+    });
+    playlist = playlist ?? data.playlist;
+    const rows: Json[] = Array.isArray(data.media_entities) ? data.media_entities : [];
+    for (const row of rows) {
+      // 歌单行是 { media_id, media_type, track_entity }，不是通用的 entity 包装
+      const entity =
+        row.track_entity ?? row.entity?.track ?? row.entity?.media?.track_entity ?? (row.base_info ? row : null);
+      if (entity?.base_info?.id) entities.push(entity);
+      if (entities.length >= limit) break;
+    }
+    const next = String(data.next_cursor ?? "");
+    if (!data.has_more || !next || next === cursor || entities.length >= limit) break;
+    cursor = next;
+  }
+  return { playlist, entities };
 }
 
 export async function feedModes(): Promise<Array<{ id: string; name: string; group: string; cover?: string }>> {
@@ -226,8 +292,8 @@ export async function feedModes(): Promise<Array<{ id: string; name: string; gro
   );
 }
 
-/** scene 传 null 时不限定场景，拿到的是通用推荐流 */
-export async function feedTracks(scene: string | null, count = 30): Promise<Json[]> {
+/** scene 传 null 时不限定场景；preference 可选 daily / fresh / familiar / explore 等口味 */
+async function feedRequest(scene: string | null, count: number, preference: string | null): Promise<Json[]> {
   const data = await platform<Json>("/feed/song-tab/", {
     played_media: [],
     is_first_request: true,
@@ -237,7 +303,7 @@ export async function feedTracks(scene: string | null, count = 30): Promise<Json
     feed_preference: {
       scene_mode_id: scene == null ? null : Number(scene),
       scene_mode_select_time: scene == null ? null : Date.now(),
-      preference_mode: null,
+      preference_mode: preference ?? null,
       total_request_count: 1,
       preference_mode_request_count: 1,
       current_mode_request_count: 1,
@@ -248,6 +314,25 @@ export async function feedTracks(scene: string | null, count = 30): Promise<Json
     .filter((item) => !item.type || item.type === "track")
     .map((item) => item.entity?.track ?? item.entity?.media?.track_entity ?? item)
     .filter(Boolean);
+}
+
+// 车机 feed 是设备级单流：并发请求会互相打空（返回 0 首），必须串行排队
+let feedChain: Promise<unknown> = Promise.resolve();
+const feedCache = new Map<string, { at: number; promise: Promise<Json[]> }>();
+const FEED_CACHE_MS = 60 * 1000;
+
+export function feedTracks(scene: string | null, count = 30, preference: string | null = null): Promise<Json[]> {
+  const key = `${scene ?? ""}|${preference ?? ""}|${count}`;
+  const hit = feedCache.get(key);
+  if (hit && Date.now() - hit.at < FEED_CACHE_MS) return hit.promise;
+
+  const run = () => feedRequest(scene, count, preference);
+  const next = feedChain.then(run, run);
+  feedChain = next.catch(() => undefined);
+  feedCache.set(key, { at: Date.now(), promise: next });
+  next.catch(() => feedCache.delete(key));
+  if (feedCache.size > 20) feedCache.clear();
+  return next;
 }
 
 export async function trackEntity(id: string): Promise<Json> {

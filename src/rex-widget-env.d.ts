@@ -4,6 +4,22 @@ declare namespace QishuiMusic {
     }
 }
 
+//#region daily
+/** Params of 每日推荐 */
+interface LoadDailyParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 每日推荐 */
+interface LoadDailyReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 每日推荐
+ * @description 每天换一批的 30 首
+ */
+declare let loadDaily: (params: LoadDailyParams) => LoadDailyReturnType | Promise<LoadDailyReturnType>;
+//#endregion daily
+
 //#region recommend
 /** Params of 推荐歌曲 */
 interface LoadRecommendParams extends QishuiMusic.GlobalParams, VideoListParams {
@@ -15,10 +31,58 @@ interface LoadRecommendReturnType extends Array<VideoItem> {
 
 /**
  * 推荐歌曲
- * @description 按你的口味挑的 30 首
+ * @description 电台式的连续推荐
  */
 declare let loadRecommend: (params: LoadRecommendParams) => LoadRecommendReturnType | Promise<LoadRecommendReturnType>;
 //#endregion recommend
+
+//#region fresh
+/** Params of 新歌速递 */
+interface LoadFreshParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 新歌速递 */
+interface LoadFreshReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 新歌速递
+ * @description 最近上架的新歌
+ */
+declare let loadFresh: (params: LoadFreshParams) => LoadFreshReturnType | Promise<LoadFreshReturnType>;
+//#endregion fresh
+
+//#region familiar
+/** Params of 猜你喜欢 */
+interface LoadFamiliarParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 猜你喜欢 */
+interface LoadFamiliarReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 猜你喜欢
+ * @description 你熟悉的那一类
+ */
+declare let loadFamiliar: (params: LoadFamiliarParams) => LoadFamiliarReturnType | Promise<LoadFamiliarReturnType>;
+//#endregion familiar
+
+//#region albums
+/** Params of 热门专辑 */
+interface LoadAlbumsParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 热门专辑 */
+interface LoadAlbumsReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 热门专辑
+ * @description 从每日推荐里挑出的整张专辑
+ */
+declare let loadAlbums: (params: LoadAlbumsParams) => LoadAlbumsReturnType | Promise<LoadAlbumsReturnType>;
+//#endregion albums
 
 //#region hot
 /** Params of 热歌歌单 */
@@ -109,7 +173,7 @@ interface SearchParams extends QishuiMusic.GlobalParams {
      * 结果类型
      * @default 'all'
      */
-    kind: 'all' | 'songs' | 'artists' | 'playlists';
+    kind: 'all' | 'songs' | 'artists' | 'albums' | 'playlists';
 }
 
 /** Return Type of 搜索 */
@@ -118,7 +182,7 @@ interface SearchReturnType extends Array<VideoItem> {
 
 /**
  * 搜索
- * @description 搜索汽水音乐的歌手、歌曲与歌单
+ * @description 搜索汽水音乐的歌手、专辑、歌曲与歌单
  */
 declare let search: (params: SearchParams) => SearchReturnType | Promise<SearchReturnType>;
 //#endregion search

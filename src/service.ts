@@ -1,6 +1,10 @@
 import {
+  type AlbumRef,
   type ArtistRef,
   type TrackRef,
+  albumDetail,
+  albumLinksOf,
+  albumRef,
   artistInfo,
   artistRef,
   artistTracks,
@@ -35,14 +39,18 @@ export function artistLink(id: string): string {
   return `${LINK_PREFIX}artist:${id}`;
 }
 
+export function albumLink(id: string): string {
+  return `${LINK_PREFIX}album:${id}`;
+}
+
 export function parseLink(
   link: string,
-): { kind: "track" | "playlist" | "scene" | "artist"; id: string; ownerId: string } | null {
+): { kind: "track" | "playlist" | "scene" | "artist" | "album"; id: string; ownerId: string } | null {
   const raw = String(link ?? "").trim();
   if (!raw.startsWith(LINK_PREFIX)) return null;
   const [kind, id, ownerId = ""] = raw.slice(LINK_PREFIX.length).split(":");
   if (!id || !/^\d{1,30}$/.test(id)) return null;
-  if (kind === "track" || kind === "scene" || kind === "artist") return { kind, id, ownerId: "" };
+  if (kind === "track" || kind === "scene" || kind === "artist" || kind === "album") return { kind, id, ownerId: "" };
   if (kind === "playlist") return { kind, id, ownerId };
   return null;
 }
@@ -84,6 +92,38 @@ function toRexArtist(ref: ArtistRef): VideoItem {
     ...(ref.intro ? { description: ref.intro.slice(0, 120) } : {}),
   };
 }
+function toRexAlbum(ref: AlbumRef): VideoItem {
+  const subtitle = [ref.artists.join(" / "), ref.trackCount ? `${ref.trackCount} 首` : "", ref.releaseDate ?? ""]
+    .filter(Boolean)
+    .join(" · ");
+  return {
+    id: ref.id,
+    type: "url",
+    mediaType: "album",
+    link: albumLink(ref.id),
+    title: ref.name,
+    ...(subtitle ? { subtitle } : {}),
+    ...(ref.cover ? { posterPath: ref.cover, coverUrl: ref.cover } : {}),
+    ...(ref.intro ? { description: ref.intro.slice(0, 150) } : {}),
+  };
+}
+
+/** 从曲目反推专辑；专辑封面只有详情端点有，所以按上限并发补齐 */
+async function albumsFromEntities(entities: Json[], limit = 8): Promise<VideoItem[]> {
+  const links = albumLinksOf(entities).slice(0, limit);
+  const rows = await Promise.all(
+    links.map(async (link) => {
+      try {
+        const { album } = await albumDetail(link.id);
+        return albumRef(album);
+      } catch {
+        return { id: link.id, name: link.name, trackCount: 0, artists: [] } as AlbumRef;
+      }
+    }),
+  );
+  return rows.filter((ref) => ref.id).map(toRexAlbum);
+}
+
 export async function handleScenes(): Promise<VideoItem[]> {
   const modes = await feedModes();
   return modes.map((mode) => {
@@ -120,21 +160,46 @@ export async function handleRecommend(): Promise<VideoItem[]> {
   return entities.map((entity) => toRexTrack(trackRef(entity)));
 }
 
+/** 车机 feed 自带多种口味：daily（每日推荐）/ fresh（新歌）/ familiar（熟悉的）/ explore（探索） */
+export async function handleFeedPreference(preference: string, count = 30): Promise<VideoItem[]> {
+  const entities = await feedTracks(null, count, preference);
+  return entities.map((entity) => toRexTrack(trackRef(entity)));
+}
+
+/** 首页「热门专辑」：车机没有专辑列表，从每日推荐的曲目里反推 */
+export async function handleAlbumSection(count = 10): Promise<VideoItem[]> {
+  const entities = await feedTracks(null, 30, "daily");
+  return albumsFromEntities(entities, count);
+}
+
+function formatCount(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "";
+  if (value >= 100000000) return `${(value / 100000000).toFixed(1)}亿`;
+  if (value >= 10000) return `${(value / 10000).toFixed(1)}万`;
+  return String(value);
+}
+
+function toRexPlaylist(row: Json): VideoItem {
+  const base = row.base_info ?? {};
+  const cover = formatCover(row.display_info?.url_cover);
+  const collected = formatCount(Number(row.stats?.count_collected ?? 0));
+  const count = Number(row.resource_cnt ?? 0);
+  const subtitle = [collected ? `${collected} 收藏` : "", count ? `${count} 首` : ""].filter(Boolean).join(" · ");
+  return {
+    id: `playlist-${base.id}`,
+    type: "url",
+    mediaType: "playlist",
+    link: playlistLink(String(base.id), String(base.owner_id ?? "")),
+    title: String(base.title ?? base.name ?? "歌单"),
+    ...(subtitle ? { subtitle } : {}),
+    ...(cover ? { posterPath: cover, coverUrl: cover } : {}),
+  };
+}
+
 /** 按关键词取一组歌单，用作首页分区（车机接口没有官方运营位） */
 export async function handlePlaylistSection(keyword: string, count = 10): Promise<VideoItem[]> {
   const rows = await searchPlaylists(keyword, count);
-  return rows.map((row) => {
-    const base = row.base_info ?? {};
-    const cover = formatCover(row.display_info?.url_cover);
-    return {
-      id: `playlist-${base.id}`,
-      type: "url",
-      mediaType: "playlist",
-      link: playlistLink(String(base.id), String(base.owner_id ?? "")),
-      title: String(base.title ?? base.name ?? "歌单"),
-      ...(cover ? { posterPath: cover, coverUrl: cover } : {}),
-    };
-  });
+  return rows.map(toRexPlaylist);
 }
 
 const ARTIST_NOISE = /歌手|歌曲|热门|榜单|合集|未知|^\s*$/;
@@ -185,31 +250,23 @@ export async function handleSearch(params: { keyword?: string; kind?: string; pa
 
   if (kind === "artists") return (await searchArtists(keyword, 20)).map((row) => toRexArtist(artistRef(row)));
   if (kind === "playlists") return handlePlaylistSection(keyword, 30);
+  if (kind === "albums") return albumsFromEntities(await searchTracks(keyword, 40), 12);
   if (kind === "songs" || kind === "tracks") {
     return (await searchTracks(keyword, 40)).map((entity) => toRexTrack(trackRef(entity)));
   }
 
-  // 混合结果：Rex 会按 mediaType 自动分组（歌手 / 歌曲 / 歌单）
-  const [artists, tracks, playlists] = await Promise.all([
+  // 混合结果：Rex 会按 mediaType 自动分组（歌手 / 专辑 / 歌曲 / 歌单）
+  const [artists, trackRows, playlists] = await Promise.all([
     searchArtists(keyword, 12).catch(() => [] as any[]),
     searchTracks(keyword, 20).catch(() => [] as any[]),
     searchPlaylists(keyword, 8).catch(() => [] as any[]),
   ]);
+  const albums = await albumsFromEntities(trackRows, 6).catch(() => [] as VideoItem[]);
   return [
     ...artists.map((row) => toRexArtist(artistRef(row))),
-    ...tracks.map((entity) => toRexTrack(trackRef(entity))),
-    ...playlists.map((row) => {
-      const base = row.base_info ?? {};
-      const cover = formatCover(row.display_info?.url_cover);
-      return {
-        id: `playlist-${base.id}`,
-        type: "url" as const,
-        mediaType: "playlist" as const,
-        link: playlistLink(String(base.id), String(base.owner_id ?? "")),
-        title: String(base.title ?? base.name ?? "歌单"),
-        ...(cover ? { posterPath: cover, coverUrl: cover } : {}),
-      };
-    }),
+    ...albums,
+    ...trackRows.map((entity) => toRexTrack(trackRef(entity))),
+    ...playlists.map(toRexPlaylist),
   ];
 }
 
@@ -219,7 +276,10 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
   const base = playlist?.base_info ?? {};
   const cover = formatCover(playlist?.display_info?.url_cover);
   const owner = playlist?.relation_info?.owner?.name;
-  const subtitle = [owner, tracks.length ? `${tracks.length} 首` : ""].filter(Boolean).join(" · ");
+  const collected = formatCount(Number(playlist?.stats?.count_collected ?? 0));
+  const subtitle = [owner, collected ? `${collected} 收藏` : "", tracks.length ? `${tracks.length} 首` : ""]
+    .filter(Boolean)
+    .join(" · ");
   return {
     id,
     type: "url",
@@ -245,12 +305,23 @@ async function loadTrackDetail(id: string): Promise<VideoItem> {
   };
 }
 
+async function loadAlbumDetail(id: string): Promise<VideoItem> {
+  const { album, entities } = await albumDetail(id);
+  const ref = albumRef(album);
+  return {
+    ...toRexAlbum(ref),
+    ...(ref.intro ? { description: ref.intro.slice(0, 300) } : {}),
+    tracks: entities.map((entity) => toRexTrack(trackRef(entity))),
+  };
+}
+
 export async function handleDetail(link: string): Promise<VideoItem> {
   const parsed = parseLink(link);
   if (!parsed) throw new Error(`无法识别的链接：${link}`);
   if (parsed.kind === "track") return loadTrackDetail(parsed.id);
   if (parsed.kind === "scene") return handleSceneDetail(parsed.id);
   if (parsed.kind === "artist") return loadArtistDetail(parsed.id);
+  if (parsed.kind === "album") return loadAlbumDetail(parsed.id);
   return loadPlaylistDetail(parsed.id, parsed.ownerId);
 }
 

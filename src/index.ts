@@ -1,6 +1,8 @@
 import {
+  handleAlbumSection,
   handleArtists,
   handleDetail,
+  handleFeedPreference,
   handlePlaylistSection,
   handleRecommend,
   handleScenes,
@@ -22,7 +24,7 @@ WidgetMetadata = {
   id: "qishui.music",
   title: process.env.NODE_ENV === "production" ? "汽水音乐" : "汽水音乐 (测试)",
   description:
-    "汽水音乐插件，基于车机开放接口：场景推荐、歌单、搜索、播放与时间轴歌词。免费曲目可完整播放，会员曲目只有试听片段",
+    "汽水音乐插件，基于车机开放接口：每日推荐、新歌、猜你喜欢、专辑、歌单、场景、歌手、搜索、播放与时间轴歌词。免费曲目可完整播放，会员曲目只有试听片段",
   author: "self-hosted",
   version: widgetVersion,
   requiredVersion: "0.0.7",
@@ -31,12 +33,44 @@ WidgetMetadata = {
   detailCacheDuration: 5,
   modules: [
     {
+      id: "daily",
+      title: "每日推荐",
+      subtitle: "每天换一批的 30 首",
+      type: "video",
+      functionName: "loadDaily",
+      cacheDuration: 3600,
+    },
+    {
       id: "recommend",
       title: "推荐歌曲",
-      subtitle: "按你的口味挑的 30 首",
+      subtitle: "电台式的连续推荐",
       type: "video",
       functionName: "loadRecommend",
       cacheDuration: 300,
+    },
+    {
+      id: "fresh",
+      title: "新歌速递",
+      subtitle: "最近上架的新歌",
+      type: "video",
+      functionName: "loadFresh",
+      cacheDuration: 3600,
+    },
+    {
+      id: "familiar",
+      title: "猜你喜欢",
+      subtitle: "你熟悉的那一类",
+      type: "video",
+      functionName: "loadFamiliar",
+      cacheDuration: 1800,
+    },
+    {
+      id: "albums",
+      title: "热门专辑",
+      subtitle: "从每日推荐里挑出的整张专辑",
+      type: "video",
+      functionName: "loadAlbums",
+      cacheDuration: 3600,
     },
     {
       id: "hot",
@@ -82,7 +116,7 @@ WidgetMetadata = {
   search: {
     id: "search",
     title: "搜索",
-    subtitle: "搜索汽水音乐的歌手、歌曲与歌单",
+    subtitle: "搜索汽水音乐的歌手、专辑、歌曲与歌单",
     functionName: "search",
     params: [
       {
@@ -91,9 +125,10 @@ WidgetMetadata = {
         type: "enumeration",
         value: "all",
         enumOptions: [
-          { title: "全部（歌手 / 歌曲 / 歌单）", value: "all" },
+          { title: "全部（歌手 / 专辑 / 歌曲 / 歌单）", value: "all" },
           { title: "歌曲", value: "songs" },
           { title: "歌手", value: "artists" },
+          { title: "专辑", value: "albums" },
           { title: "歌单", value: "playlists" },
         ],
       },
@@ -104,6 +139,14 @@ WidgetMetadata = {
 loadScenes = async () => handleScenes();
 
 loadRecommend = async () => handleRecommend();
+
+loadDaily = async () => handleFeedPreference("daily", 30);
+
+loadFresh = async () => handleFeedPreference("fresh", 30);
+
+loadFamiliar = async () => handleFeedPreference("familiar", 30);
+
+loadAlbums = async () => handleAlbumSection(10);
 
 loadArtists = async (params) => handleArtists(params);
 
