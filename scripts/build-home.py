@@ -21,7 +21,7 @@ SCRIPT_URL = "https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@{sha}/dist/qishui.js"
 BUNDLE_ID = "qishui.music"
 
 # 行标题由宿主渲染，改不了缩进；卡片内容都缩进了 16pt，标题前面补个宽度固定的空格跟上
-SHIFT = "\u2002"  # en space，约半个字宽，不会像普通空格那样被折叠
+SHIFT = ""  # 行标题由宿主绘制，箭头贴行右边缘不随文字移动；加空格只会让标题彼此错位
 
 # (行 id, 标题, style, gridSize, functionId, htmlTemplate)
 # 一行一个样：大卡 → 两列列表 → 压字方卡 → 两列列表 → 榜单小卡 → 两列列表 → 压字方卡 → 圆头像
