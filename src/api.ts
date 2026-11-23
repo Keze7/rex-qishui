@@ -26,6 +26,21 @@ const COMMON_PARAMS: Record<string, string> = {
 
 export type Json = Record<string, any>;
 
+/**
+ * 字节系图片服务：`urls[0] + uri` 只是裸路径，直接请求会 400。
+ * 必须追加 `~{template_prefix}-origin.image`，缺模板后缀 CDN 会报 "fail to get template"。
+ */
+export function formatCover(image?: Json | string | null): string {
+  if (!image) return "";
+  if (typeof image === "string") return image;
+  const prefix = Array.isArray(image.urls) && image.urls.length ? String(image.urls[0]) : "";
+  const uri = image.uri ? String(image.uri) : "";
+  if (!prefix || !uri) return "";
+  const base = prefix + uri;
+  const template = image.template_prefix ? String(image.template_prefix) : "";
+  return template ? `${base}~${template}-origin.image` : base;
+}
+
 export interface TrackRef {
   id: string;
   name: string;
@@ -169,7 +184,7 @@ export async function feedModes(): Promise<Array<{ id: string; name: string; gro
       const mode = item.entity?.feed_mode;
       const id = mode?.scene_mode?.scene_mode_id;
       if (id == null) return [];
-      return [{ id: String(id), name: String(mode.text || "推荐"), group: String(block.title || ""), cover: mode.url_info }];
+      return [{ id: String(id), name: String(mode.text || "推荐"), group: String(block.title || ""), cover: formatCover(mode.url_info) }];
     }),
   );
 }
@@ -249,7 +264,7 @@ export function trackRef(entity: Json): TrackRef {
     name: String(base.name ?? "未知歌曲"),
     artists: artists.length ? artists : ["未知歌手"],
     album: related.album_link?.name ? String(related.album_link.name) : undefined,
-    cover: entity.display_info?.cover_url?.urls?.[0],
+    cover: formatCover(entity.display_info?.cover_url),
     durationMs: Number(base.duration_ms ?? 0),
     vip: String(entity.commerce_info?.playable_condition ?? "1 == 1") !== "1 == 1",
   };

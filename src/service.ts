@@ -2,6 +2,7 @@ import {
   type TrackRef,
   feedModes,
   feedTracks,
+  formatCover,
   lyricOf,
   playlistTracks,
   resolveAudio,
@@ -94,7 +95,7 @@ export async function handleSearch(params: { keyword?: string; kind?: string; pa
     const rows = await searchPlaylists(keyword, 30);
     return rows.map((row) => {
       const base = row.base_info ?? {};
-      const cover = row.display_info?.url_cover?.urls?.[0];
+      const cover = formatCover(row.display_info?.url_cover);
       const count = Number(row.resource_cnt ?? 0);
       return {
         id: `playlist-${base.id}`,
@@ -115,7 +116,7 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
   const { playlist, entities } = await playlistTracks(id, ownerId);
   const tracks = entities.map((entity) => toRexTrack(trackRef(entity)));
   const base = playlist?.base_info ?? {};
-  const cover = playlist?.display_info?.url_cover?.urls?.[0];
+  const cover = formatCover(playlist?.display_info?.url_cover);
   const owner = playlist?.relation_info?.owner?.name;
   const subtitle = [owner, tracks.length ? `${tracks.length} 首` : ""].filter(Boolean).join(" · ");
   return {
