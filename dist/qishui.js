@@ -108,14 +108,14 @@ function f(e) {
         return "string" == typeof o.data ? JSON.parse(o.data) : o.data;
     }).apply(this, arguments);
 }
-let s = null;
-function d(e) {
+let d = null;
+function s(e) {
     return t(function*(e, o = {}) {
         for(let p = 0;; p++){
-            var a, u, d;
+            var a, u, s;
             let y = yield function(e = !1) {
                 return t(function*() {
-                    if (!e && s && Date.now() - s.at < 1800000) return s.value;
+                    if (!e && d && Date.now() - d.at < 1800000) return d.value;
                     let t = yield f(`https://open.qishui.com${i}/client/token/get/?${c({
                         trigger_type: "cold_start"
                     })}`, {
@@ -124,7 +124,7 @@ function d(e) {
                         }
                     });
                     if ("string" != typeof t.client_token || !t.client_token) throw Error(`汽水客户端令牌获取失败${t.err_msg ? `：${t.err_msg}` : ""}`);
-                    return (s = {
+                    return (d = {
                         value: t.client_token,
                         at: Date.now()
                     }).value;
@@ -139,7 +139,7 @@ function d(e) {
                 data: JSON.stringify(r(n({}, o), {
                     common_params: {}
                 }))
-            }), h = Number(null != (a = null != (u = m.err_no) ? u : null == (d = m.data) ? void 0 : d.error_code) ? a : 0);
+            }), h = Number(null != (a = null != (u = m.err_no) ? u : null == (s = m.data) ? void 0 : s.error_code) ? a : 0);
             if (28001008 !== h || 0 !== p) {
                 if (h) throw Error(`汽水接口错误 ${h}${m.err_msg ? `：${m.err_msg}` : ""}`);
                 if (!m.data || "object" != typeof m.data) throw Error("汽水接口返回缺少 data");
@@ -151,7 +151,7 @@ function d(e) {
 function p(e, n, r) {
     return t(function*() {
         var t;
-        let i = `${Date.now()}-${Math.random().toString(16).slice(2)}`, l = yield d("/search/", {
+        let i = `${Date.now()}-${Math.random().toString(16).slice(2)}`, l = yield s("/search/", {
             q: n,
             cursor: "0",
             search_id: i,
@@ -197,12 +197,12 @@ function g(e) {
     };
 }
 function v(e) {
-    var t, i, l, o, a, c, f, s, d;
+    var t, i, l, o, a, c, f, d, s;
     let p = null != (t = null == e ? void 0 : e.base_info) ? t : {}, y = Array.isArray(null == e || null == (f = e.related_info) ? void 0 : f.artist_links) ? e.related_info.artist_links.map((e)=>String(e.name || "")).filter(Boolean) : [], m = Number(null != (i = p.release_date) ? i : 0);
     return r(n({
         id: String(null != (l = p.id) ? l : ""),
         name: String(null != (o = p.name) ? o : "未知专辑"),
-        cover: u(null != (a = null == e || null == (s = e.display) ? void 0 : s.url_cover) ? a : null == e || null == (d = e.display_info) ? void 0 : d.url_cover),
+        cover: u(null != (a = null == e || null == (d = e.display) ? void 0 : d.url_cover) ? a : null == e || null == (s = e.display_info) ? void 0 : s.url_cover),
         trackCount: Number(null != (c = p.count_tracks) ? c : 0),
         artists: y
     }, m > 0 ? {
@@ -214,7 +214,7 @@ function v(e) {
 function _(e) {
     return t(function*() {
         var t;
-        let n = yield d("/album/detail/", {
+        let n = yield s("/album/detail/", {
             album_id: e
         }), r = Array.isArray(n.tracks) ? n.tracks : [];
         return {
@@ -254,7 +254,7 @@ function x(e) {
         let t = [];
         for(let i = 0; i < e.length; i += 50){
             var n, r;
-            let l = e.slice(i, i + 50), o = yield d("/media/mget/", {
+            let l = e.slice(i, i + 50), o = yield s("/media/mget/", {
                 media_list: l.map((e)=>({
                         id: e,
                         type: "track"
@@ -271,7 +271,7 @@ function $(e, n = "", r = 200) {
         let t, i = [], l = [], o = "0";
         for(let u = 0; u < 8; u++){
             var a;
-            let u = yield d("/playlist/detail/", {
+            let u = yield s("/playlist/detail/", {
                 playlist_id: e,
                 owner_id: n,
                 count: 100,
@@ -301,7 +301,7 @@ function O(e, n = 30, r = null) {
     let i = `${null != e ? e : ""}|${null != r ? r : ""}|${n}`, l = w.get(i);
     if (l && Date.now() - l.at < 60000) return l.promise;
     let o = ()=>t(function*() {
-            let t = yield d("/feed/song-tab/", {
+            let t = yield s("/feed/song-tab/", {
                 played_media: [],
                 is_first_request: !0,
                 with_client_cache: !1,
@@ -329,7 +329,7 @@ function O(e, n = 30, r = null) {
 function j(e) {
     return t(function*() {
         var t;
-        let n = yield d("/media/mget/", {
+        let n = yield s("/media/mget/", {
             media_list: [
                 {
                     id: e,
@@ -349,7 +349,7 @@ function P(e) {
     return t(function*() {
         let t = e.player_info;
         if (!t) throw Error("这首歌没有可播放音源");
-        for (let [e, d] of [
+        for (let [e, s] of [
             [
                 "full",
                 !1
@@ -359,14 +359,14 @@ function P(e) {
                 !0
             ]
         ]){
-            var n, r, i, o, a, u, c, s;
+            var n, r, i, o, a, u, c, d;
             let p = null == (a = t[e]) ? void 0 : a.video_model_info;
             if (!(null == p ? void 0 : p.url_player_info)) continue;
             let y = yield f(String(p.url_player_info), {
                 headers: {
                     "user-agent": l
                 }
-            }), m = (null != (n = null != (r = null != (i = null == (c = y.Result) || null == (u = c.Data) ? void 0 : u.PlayInfoList) ? i : null == (s = y.data) ? void 0 : s.PlayInfoList) ? r : y.PlayInfoList) ? n : []).filter((e)=>(null == e ? void 0 : e.MainPlayUrl) && !e.PlayAuth && !e.EncryptionMethod).sort((e, t)=>{
+            }), m = (null != (n = null != (r = null != (i = null == (c = y.Result) || null == (u = c.Data) ? void 0 : u.PlayInfoList) ? i : null == (d = y.data) ? void 0 : d.PlayInfoList) ? r : y.PlayInfoList) ? n : []).filter((e)=>(null == e ? void 0 : e.MainPlayUrl) && !e.PlayAuth && !e.EncryptionMethod).sort((e, t)=>{
                 var n, r;
                 return Number(null != (n = t.Bitrate) ? n : 0) - Number(null != (r = e.Bitrate) ? r : 0);
             });
@@ -374,7 +374,7 @@ function P(e) {
             let h = m[0], g = Number(null != (o = h.Duration) ? o : 0);
             return {
                 url: String(h.MainPlayUrl),
-                preview: d || g > 0 && g < 25,
+                preview: s || g > 0 && g < 25,
                 duration: g
             };
         }
@@ -382,18 +382,18 @@ function P(e) {
     })();
 }
 function A(e) {
-    var t, n, r, i, l, o, a, c, f, s;
-    let d = null != (t = e.base_info) ? t : {}, p = null != (n = e.related_info) ? n : {}, y = Array.isArray(p.artist_links) ? p.artist_links.map((e)=>String(e.name || "")).filter(Boolean) : [];
+    var t, n, r, i, l, o, a, c, f, d;
+    let s = null != (t = e.base_info) ? t : {}, p = null != (n = e.related_info) ? n : {}, y = Array.isArray(p.artist_links) ? p.artist_links.map((e)=>String(e.name || "")).filter(Boolean) : [];
     return {
-        id: String(null != (r = null != (i = d.id) ? i : e.id) ? r : ""),
-        name: String(null != (l = d.name) ? l : "未知歌曲"),
+        id: String(null != (r = null != (i = s.id) ? i : e.id) ? r : ""),
+        name: String(null != (l = s.name) ? l : "未知歌曲"),
         artists: y.length ? y : [
             "未知歌手"
         ],
         album: (null == (c = p.album_link) ? void 0 : c.name) ? String(p.album_link.name) : void 0,
         cover: u(null == (f = e.display_info) ? void 0 : f.cover_url),
-        durationMs: Number(null != (o = d.duration_ms) ? o : 0),
-        vip: "1 == 1" !== String(null != (a = null == (s = e.commerce_info) ? void 0 : s.playable_condition) ? a : "1 == 1")
+        durationMs: Number(null != (o = s.duration_ms) ? o : 0),
+        vip: "1 == 1" !== String(null != (a = null == (d = e.commerce_info) ? void 0 : d.playable_condition) ? a : "1 == 1")
     };
 }
 function D(e) {
@@ -408,12 +408,12 @@ function D(e) {
     }
     return t;
 }
-let N = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-function C(e) {
+let C = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+function N(e) {
     let t = "";
     for(let n = 0; n < e.length; n += 3){
         let r = e[n] << 16 | (n + 1 < e.length ? e[n + 1] : 0) << 8 | (n + 2 < e.length ? e[n + 2] : 0);
-        t += N[r >> 18 & 63] + N[r >> 12 & 63], t += n + 1 < e.length ? N[r >> 6 & 63] : "=", t += n + 2 < e.length ? N[63 & r] : "=";
+        t += C[r >> 18 & 63] + C[r >> 12 & 63], t += n + 1 < e.length ? C[r >> 6 & 63] : "=", t += n + 2 < e.length ? C[63 & r] : "=";
     }
     return t;
 }
@@ -422,12 +422,12 @@ function E(e, t) {
     for(let e = t - 1; e >= 0; e--)n[e] = Number(255n & r), r >>= 8n;
     return n;
 }
-function q(e) {
+function I(e) {
     let t = 0n;
     for (let n of e)t = t << 8n | BigInt(n);
     return t;
 }
-let I = [
+let q = [
     0x428a2f98,
     0x71374491,
     0xb5c0fbcf,
@@ -516,12 +516,12 @@ function z(e) {
             let t = M(i[e - 15], 7) ^ M(i[e - 15], 18) ^ i[e - 15] >>> 3, n = M(i[e - 2], 17) ^ M(i[e - 2], 19) ^ i[e - 2] >>> 10;
             i[e] = i[e - 16] + t + i[e - 7] + n >>> 0;
         }
-        let [r, l, o, a, u, c, f, s] = t;
+        let [r, l, o, a, u, c, f, d] = t;
         for(let e = 0; e < 64; e++){
-            let t = s + (M(u, 6) ^ M(u, 11) ^ M(u, 25)) + (u & c ^ ~u & f) + I[e] + i[e] >>> 0, n = (M(r, 2) ^ M(r, 13) ^ M(r, 22)) + (r & l ^ r & o ^ l & o) >>> 0;
-            s = f, f = c, c = u, u = a + t >>> 0, a = o, o = l, l = r, r = t + n >>> 0;
+            let t = d + (M(u, 6) ^ M(u, 11) ^ M(u, 25)) + (u & c ^ ~u & f) + q[e] + i[e] >>> 0, n = (M(r, 2) ^ M(r, 13) ^ M(r, 22)) + (r & l ^ r & o ^ l & o) >>> 0;
+            d = f, f = c, c = u, u = a + t >>> 0, a = o, o = l, l = r, r = t + n >>> 0;
         }
-        t[0] = t[0] + r >>> 0, t[1] = t[1] + l >>> 0, t[2] = t[2] + o >>> 0, t[3] = t[3] + a >>> 0, t[4] = t[4] + u >>> 0, t[5] = t[5] + c >>> 0, t[6] = t[6] + f >>> 0, t[7] = t[7] + s >>> 0;
+        t[0] = t[0] + r >>> 0, t[1] = t[1] + l >>> 0, t[2] = t[2] + o >>> 0, t[3] = t[3] + a >>> 0, t[4] = t[4] + u >>> 0, t[5] = t[5] + c >>> 0, t[6] = t[6] + f >>> 0, t[7] = t[7] + d >>> 0;
     }
     let l = [];
     for (let e of t)l.push(e >>> 24 & 255, e >>> 16 & 255, e >>> 8 & 255, 255 & e);
@@ -574,7 +574,7 @@ function L(e, t) {
         if (0n === t.z) return e;
         let n = U(e.z * e.z), r = U(t.z * t.z), i = U(e.x * r), l = U(t.x * n), o = U(e.y * t.z * r), a = U(t.y * e.z * n);
         if (i === l) return o === a ? W(e) : B;
-        let u = U(l - i), c = U(4n * u * u), f = U(u * c), s = U(2n * (a - o)), d = U(i * c), p = U(s * s - f - 2n * d), y = U(s * (d - p) - 2n * o * f);
+        let u = U(l - i), c = U(4n * u * u), f = U(u * c), d = U(2n * (a - o)), s = U(i * c), p = U(d * d - f - 2n * s), y = U(d * (s - p) - 2n * o * f);
         return {
             x: p,
             y,
@@ -627,14 +627,14 @@ function G(e) {
     }(e));
 }
 function K(e, t) {
-    let n = q(z(t)), r = E(e, 32), i = E(U(n, 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n), 32), l = Array(32).fill(1), o = Array(32).fill(0);
+    let n = I(z(t)), r = E(e, 32), i = E(U(n, 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n), 32), l = Array(32).fill(1), o = Array(32).fill(0);
     o = T(o, l.concat([
         0
     ], r, i)), l = T(o, l), o = T(o, l.concat([
         1
     ], r, i)), l = T(o, l);
     let a = 0n;
-    for(; !((a = q(l = T(o, l))) > 0n) || !(a < 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n);)o = T(o, l.concat([
+    for(; !((a = I(l = T(o, l))) > 0n) || !(a < 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n);)o = T(o, l.concat([
         0
     ])), l = T(o, l);
     let u = U(F(L({
@@ -778,13 +778,13 @@ function ef(e) {
         return null;
     }
 }
-function es(e, t) {
+function ed(e, t) {
     try {
         var n;
         null == (n = Widget.storage) || n.set(e, t);
     } catch (e) {}
 }
-function ed(e) {
+function es(e) {
     try {
         var t;
         null == (t = Widget.storage) || t.remove(e);
@@ -871,15 +871,15 @@ function eh(e, t, n) {
             return n;
         }(u));
         if (!(null == c ? void 0 : c.ticket) || !(null == c ? void 0 : c.client_cert)) throw Error("票据格式异常，请重新扫码");
-        let f = String(c.client_cert), s = Number(null != (i = e.expires_time) ? i : 0), d = s > 1e12 ? s : s > 1e9 ? 1000 * s : s > 0 ? Date.now() + 1000 * s : Date.now() + 21600000;
+        let f = String(c.client_cert), d = Number(null != (i = e.expires_time) ? i : 0), s = d > 1e12 ? d : d > 1e9 ? 1000 * d : d > 0 ? Date.now() + 1000 * d : Date.now() + 21600000;
         return {
             key: t,
             ticket: String(c.ticket),
-            cert: f.includes("-----BEGIN") ? C(D(f)) : f,
+            cert: f.includes("-----BEGIN") ? N(D(f)) : f,
             tsSign: String(null != (l = c.ts_sign) ? l : ""),
             accessCode: String(e.access_code),
             openId: String(e.open_id || e.open_uid || ""),
-            expiresAt: d
+            expiresAt: s
         };
     })();
 }
@@ -910,8 +910,8 @@ function eb(e, t) {
     return "";
 }
 function ek(e, t) {
-    let n = Math.floor(Date.now() / 1000), r = `ticket=${e.ticket}&path=${X}${t}&timestamp=${n}`, i = C(K(BigInt(`0x${e.key}`), D(r)));
-    return C(D(JSON.stringify({
+    let n = Math.floor(Date.now() / 1000), r = `ticket=${e.ticket}&path=${X}${t}&timestamp=${n}`, i = N(K(BigInt(`0x${e.key}`), D(r)));
+    return N(D(JSON.stringify({
         ts_sign: e.tsSign,
         req_content: "ticket,path,timestamp",
         req_sign: i,
@@ -935,7 +935,7 @@ function e$(e) {
             }), l = Z(V({}, i, r), {
                 accessCode: String(n.access_code || i.accessCode)
             });
-            return es(en, l), l;
+            return ed(en, l), l;
         })().finally(()=>{
             ex = null;
         })), o = yield ea(`https://open.douyin.com${X}${e}?${el({})}`, {
@@ -978,7 +978,7 @@ function ew(e, t = "", n = 200) {
     return Q(function*() {
         let r, i = [], l = [], o = "", a = "0";
         for(let h = 0; h < 8 && i.length < n; h++){
-            var u, c, f, s, d, p, y, m;
+            var u, c, f, d, s, p, y, m;
             let h = yield e$("/playlist/detail/", {
                 playlist_id: e,
                 owner_id: t,
@@ -989,7 +989,7 @@ function ew(e, t = "", n = 200) {
             r = null != r ? r : h.playlist;
             let g = Array.isArray(h.media_entities) ? h.media_entities : [];
             for (let e of g){
-                let t = null != (c = null != (f = null != (s = e.track_entity) ? s : null == (d = e.entity) ? void 0 : d.track) ? f : null == (y = e.entity) || null == (p = y.media) ? void 0 : p.track_entity) ? c : e.base_info ? e : null;
+                let t = null != (c = null != (f = null != (d = e.track_entity) ? d : null == (s = e.entity) ? void 0 : s.track) ? f : null == (y = e.entity) || null == (p = y.media) ? void 0 : p.track_entity) ? c : e.base_info ? e : null;
                 if ((null == t || null == (m = t.base_info) ? void 0 : m.id) ? i.push(t) : e.media_id && l.push(String(e.media_id)), i.length >= n) break;
             }
             if (!i.length) {
@@ -1048,7 +1048,12 @@ function eA(e, t) {
         subtitle: t
     };
 }
-function eD(e, t, n, r, i, l, o) {
+function eD(e, t) {
+    let n = String(t || "空").replace(/\s+/g, " ").trim(), r = [];
+    for(let e = 0; e < n.length; e += 52)r.push(n.slice(e, e + 52));
+    return r.length || r.push("空"), r.map((t, n)=>eA(r.length > 1 ? `${e} ${n + 1}/${r.length}` : e, t));
+}
+function eC(e, t, n, r, i, l, o) {
     try {
         var a = e[l](o), u = a.value;
     } catch (e) {
@@ -1063,16 +1068,16 @@ function eN(e) {
         return new Promise(function(r, i) {
             var l = e.apply(t, n);
             function o(e) {
-                eD(l, r, i, o, a, "next", e);
+                eC(l, r, i, o, a, "next", e);
             }
             function a(e) {
-                eD(l, r, i, o, a, "throw", e);
+                eC(l, r, i, o, a, "throw", e);
             }
             o(void 0);
         });
     };
 }
-function eC(e) {
+function eE(e) {
     for(var t = 1; t < arguments.length; t++){
         var n = null != arguments[t] ? arguments[t] : {}, r = Object.keys(n);
         "function" == typeof Object.getOwnPropertySymbols && (r = r.concat(Object.getOwnPropertySymbols(n).filter(function(e) {
@@ -1089,7 +1094,7 @@ function eC(e) {
     }
     return e;
 }
-function eE(e, t) {
+function eI(e, t) {
     return t = null != t ? t : {}, Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : (function(e) {
         var t = Object.keys(e);
         if (Object.getOwnPropertySymbols) {
@@ -1102,16 +1107,16 @@ function eE(e, t) {
     }), e;
 }
 let eq = "qishui:";
-function eI(e) {
+function eM(e) {
     return `${eq}track:${e}`;
 }
-function eM(e, t = "") {
+function ez(e, t = "") {
     return `${eq}playlist:${e}:${t}`;
 }
-function ez(e) {
+function eT(e) {
     return `${eq}scene:${e}`;
 }
-function eT(e) {
+function eB(e) {
     let t = String(null != e ? e : "").trim();
     if (!t.startsWith(eq)) return null;
     let [n, r, i = ""] = t.slice(eq.length).split(":");
@@ -1125,41 +1130,41 @@ function eT(e) {
         ownerId: i
     } : null : null;
 }
-function eB(e) {
+function eU(e) {
     if (!Number.isFinite(e) || e <= 0) return "";
     let t = Math.round(e / 1000);
     return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
 }
-function eU(e) {
+function eR(e) {
     let t = [
         e.artists.join(" / "),
         e.album,
-        eB(e.durationMs)
+        eU(e.durationMs)
     ].filter(Boolean).join(" · "), n = Math.round(e.durationMs / 1000);
-    return eC({
+    return eE({
         id: e.id,
         type: "url",
         mediaType: "song",
-        link: eI(e.id),
+        link: eM(e.id),
         title: e.name
     }, t ? {
         subtitle: t
     } : {}, n > 0 ? {
         duration: n,
-        durationText: eB(e.durationMs)
+        durationText: eU(e.durationMs)
     } : {}, e.cover ? {
         posterPath: e.cover,
         coverUrl: e.cover
     } : {});
 }
-let eR = new Map();
-function eW(e) {
+let eW = new Map();
+function eL(e) {
     var t;
     let n = [
         e.trackCount ? `${e.trackCount} 首` : "",
         e.albumCount ? `${e.albumCount} 张专辑` : ""
     ].filter(Boolean).join(" · ");
-    return eC({
+    return eE({
         id: e.id,
         type: "person",
         mediaType: "person",
@@ -1175,14 +1180,14 @@ function eW(e) {
         description: e.intro.slice(0, 120)
     } : {});
 }
-function eL(e) {
+function eF(e) {
     var t, n;
     let r = [
         e.artists.join(" / "),
         e.trackCount ? `${e.trackCount} 首` : "",
         null != (t = e.releaseDate) ? t : ""
     ].filter(Boolean).join(" · ");
-    return eC({
+    return eE({
         id: e.id,
         type: "url",
         mediaType: "album",
@@ -1197,7 +1202,7 @@ function eL(e) {
         description: e.intro.slice(0, 150)
     } : {});
 }
-function eF(e, t = 8) {
+function eJ(e, t = 8) {
     return eN(function*() {
         let n = (function(e) {
             let t = new Set(), n = [];
@@ -1223,54 +1228,54 @@ function eF(e, t = 8) {
                         artists: []
                     };
                 }
-            })()))).filter((e)=>e.id).map(eL);
+            })()))).filter((e)=>e.id).map(eF);
     })();
 }
-function eJ(e, t = 30) {
+function eY(e, t = 30) {
     return eN(function*() {
-        return (yield O(null, t, e)).map((e)=>eU(A(e)));
+        return (yield O(null, t, e)).map((e)=>eR(A(e)));
     })();
-}
-function eY(e) {
-    return !Number.isFinite(e) || e <= 0 ? "" : e >= 100000000 ? `${(e / 100000000).toFixed(1)}亿` : e >= 10000 ? `${(e / 10000).toFixed(1)}万` : String(e);
 }
 function eG(e) {
+    return !Number.isFinite(e) || e <= 0 ? "" : e >= 100000000 ? `${(e / 100000000).toFixed(1)}亿` : e >= 10000 ? `${(e / 10000).toFixed(1)}万` : String(e);
+}
+function eK(e) {
     var t, n, r, i, l, o, a, c, f;
-    let s = null != (t = e.base_info) ? t : {}, d = u(null == (a = e.display_info) ? void 0 : a.url_cover), p = eY(Number(null != (n = null == (c = e.stats) ? void 0 : c.count_collected) ? n : 0)), y = "number" == typeof e.resource_cnt ? e.resource_cnt : Number(null != (r = null == (f = e.resource_cnt) ? void 0 : f.track_cnt) ? r : 0), m = [
+    let d = null != (t = e.base_info) ? t : {}, s = u(null == (a = e.display_info) ? void 0 : a.url_cover), p = eG(Number(null != (n = null == (c = e.stats) ? void 0 : c.count_collected) ? n : 0)), y = "number" == typeof e.resource_cnt ? e.resource_cnt : Number(null != (r = null == (f = e.resource_cnt) ? void 0 : f.track_cnt) ? r : 0), m = [
         p ? `${p} 收藏` : "",
         y ? `${y} 首` : ""
     ].filter(Boolean).join(" · ");
-    return eC({
-        id: `playlist-${s.id}`,
+    return eE({
+        id: `playlist-${d.id}`,
         type: "url",
         mediaType: "playlist",
-        link: eM(String(s.id), String(null != (i = s.owner_id) ? i : "")),
-        title: String(null != (l = null != (o = s.title) ? o : s.name) ? l : "歌单")
+        link: ez(String(d.id), String(null != (i = d.owner_id) ? i : "")),
+        title: String(null != (l = null != (o = d.title) ? o : d.name) ? l : "歌单")
     }, m ? {
         subtitle: m
-    } : {}, d ? {
-        posterPath: d,
-        coverUrl: d
+    } : {}, s ? {
+        posterPath: s,
+        coverUrl: s
     } : {});
 }
-function eK(e, t = 10) {
+function eH(e, t = 10) {
     return eN(function*() {
-        return (yield m(e, t)).map(eG);
+        return (yield m(e, t)).map(eK);
     })();
 }
-let eH = /歌手|歌曲|热门|榜单|合集|未知|^\s*$/;
-function eQ(e) {
+let eQ = /歌手|歌曲|热门|榜单|合集|未知|^\s*$/;
+function eV(e) {
     return eN(function*() {
         let [n, r] = yield Promise.all([
             t(function*() {
                 var t;
-                return g(null != (t = (yield d("/artist/detail/", {
+                return g(null != (t = (yield s("/artist/detail/", {
                     artist_id: e
                 })).artist_info) ? t : {});
             })(),
             function(e, n = 50) {
                 return t(function*() {
-                    let t = yield d("/artist/tracks/", {
+                    let t = yield s("/artist/tracks/", {
                         artist_id: e,
                         count: n,
                         cursor: "0"
@@ -1278,11 +1283,11 @@ function eQ(e) {
                     return Array.isArray(t.tracks) ? t.tracks : [];
                 })();
             }(e)
-        ]), i = r.map((e)=>eU(A(e))), l = [
+        ]), i = r.map((e)=>eR(A(e))), l = [
             i.length ? `${i.length} 首热门` : "",
             n.albumCount ? `${n.albumCount} 张专辑` : ""
         ].filter(Boolean).join(" · ");
-        return eE(eC({}, eW(n), l ? {
+        return eI(eE({}, eL(n), l ? {
             subtitle: l
         } : {}, n.intro ? {
             description: n.intro.slice(0, 300)
@@ -1291,13 +1296,13 @@ function eQ(e) {
         });
     })();
 }
-let eV = (e)=>e.filter((t, n)=>e.indexOf(t) === n), eZ = /^\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\](.*)$/, eX = /^\[(\d+),(\d+)\](.*)$/, e0 = /<\d+,\d+(?:,\d+)?>/g;
-function e1(e) {
+let eZ = (e)=>e.filter((t, n)=>e.indexOf(t) === n), eX = /^\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\](.*)$/, e0 = /^\[(\d+),(\d+)\](.*)$/, e1 = /<\d+,\d+(?:,\d+)?>/g;
+function e2(e) {
     let t = [];
     for (let n of String(null != e ? e : "").split(/\r?\n/)){
         let e = n.trim();
         if (!e) continue;
-        let r = eZ.exec(e);
+        let r = eX.exec(e);
         if (r) {
             let [, e, n, i = "0", l] = r, o = 60000 * Number(e) + 1000 * Number(n) + Number(i.padEnd(3, "0").slice(0, 3));
             t.push({
@@ -1306,23 +1311,23 @@ function e1(e) {
             });
             continue;
         }
-        let i = eX.exec(e);
+        let i = e0.exec(e);
         i && t.push({
             ms: Number(i[1]),
-            text: i[3].replace(e0, "").trim()
+            text: i[3].replace(e1, "").trim()
         });
     }
     return t;
 }
-function e2(e) {
+function e3(e) {
     let t = Math.floor(e / 60000), n = Math.floor(e % 60000 / 1000), r = Math.floor(e % 1000 / 10);
     return `[${String(t).padStart(2, "0")}:${String(n).padStart(2, "0")}.${String(r).padStart(2, "0")}]`;
 }
-function e3(e) {
-    return e1(e).map((e)=>`${e2(e.ms)}${e.text}`).join("\n");
+function e6(e) {
+    return e2(e).map((e)=>`${e3(e.ms)}${e.text}`).join("\n");
 }
-let e6 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-function e5(e) {
+let e5 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+function e8(e) {
     return `data:text/plain;charset=utf-8;base64,${function(e) {
         let t = function(e) {
             let t = [];
@@ -1339,21 +1344,21 @@ function e5(e) {
         for(let e = 0; e < t.length; e += 3){
             var r, i;
             let l = t[e] << 16 | (null != (r = t[e + 1]) ? r : 0) << 8 | (null != (i = t[e + 2]) ? i : 0);
-            n += e6[l >> 18 & 63] + e6[l >> 12 & 63], n += e + 1 < t.length ? e6[l >> 6 & 63] : "=", n += e + 2 < t.length ? e6[63 & l] : "=";
+            n += e5[l >> 18 & 63] + e5[l >> 12 & 63], n += e + 1 < t.length ? e5[l >> 6 & 63] : "=", n += e + 2 < t.length ? e5[63 & l] : "=";
         }
         return n;
     }(e)}`;
 }
-let e8 = `${eq}login:0`;
-function e4(e) {
+let e4 = `${eq}login:0`;
+function e7(e) {
     let t = [
         e.vip ? "VIP" : "普通账号",
         e.userId
     ].filter(Boolean).join(" · ");
-    return eE(eC(eE(eC({
+    return eI(eE(eI(eE({
         id: "my-account",
         type: "url",
-        link: e8,
+        link: e4,
         title: `已登录：${e.nickname || e.userId}`
     }, t ? {
         subtitle: t
@@ -1372,11 +1377,11 @@ function e4(e) {
         ]
     });
 }
-function e7(e, t, n) {
-    return eC({
+function e9(e, t, n) {
+    return eE({
         id: "my-notice",
         type: "url",
-        link: e8,
+        link: e4,
         title: e
     }, t ? {
         subtitle: t
@@ -1384,11 +1389,11 @@ function e7(e, t, n) {
         description: n
     } : {});
 }
-function e9(e, t) {
+function te(e, t) {
     return {
         id: "login-qr",
         type: "url",
-        link: e8,
+        link: e4,
         title: t,
         subtitle: "点开这一条看大图，用汽水音乐 App 扫码",
         description: "二维码 5 分钟内有效。登录态只保存在本机，不会上传到任何服务器。",
@@ -1397,14 +1402,14 @@ function e9(e, t) {
         coverUrl: e
     };
 }
-function te() {
-    return e7("点这里登录汽水音乐", "登录后才会显示账号里的歌单", "汽水音乐的账号数据要扫码授权才能读，接口不给匿名访问。");
-}
 function tt() {
+    return e9("点这里登录汽水音乐", "登录后才会显示账号里的歌单", "汽水音乐的账号数据要扫码授权才能读，接口不给匿名访问。");
+}
+function tn() {
     return eN(function*() {
         let e = ep();
         if (e) return [
-            e4(e)
+            e7(e)
         ];
         let t = em();
         if (t) {
@@ -1415,7 +1420,7 @@ function tt() {
                     state: "expired"
                 };
                 let l = null == (t = (yield ea(`https://open.douyin.com/oauth/check_qrcode/?${ey()}&token=${encodeURIComponent(i.token)}&timestamp=${Date.now()}`)).data) ? void 0 : t.data, o = String(null != (e = null == l ? void 0 : l.status) ? e : "").toLowerCase(), a = ev[o];
-                return "expired" === a ? (ed(er), {
+                return "expired" === a ? (es(er), {
                     state: "expired"
                 }) : "waiting" === a || "scanned" === a ? {
                     state: a
@@ -1477,19 +1482,19 @@ function tt() {
                         ec(c.data);
                         let f = null == (i = c.data) || null == (t = i.data) ? void 0 : t.my_info;
                         if (a.push(`me/info ${c.status} ${e_(c.data)}`), !(null == f ? void 0 : f.id)) throw Error("账号信息读取失败");
-                        let s = Z(V({}, u), {
+                        let d = Z(V({}, u), {
                             userId: String(f.id),
                             nickname: String(null != (e = f.nickname) ? e : ""),
                             avatar: String(f.medium_avatar_url || f.avatar_url || ""),
                             vip: !0 === f.is_vip
                         });
-                        if (es(en, s), ed(er), !ep()) return {
+                        if (ed(en, d), es(er), !ep()) return {
                             state: "unknown",
                             debug: "票据拿到了但本地存不进去（Widget.storage 不可写）"
                         };
                         return {
                             state: "done",
-                            account: s
+                            account: d
                         };
                     } catch (t) {
                         let e = String(null != (o = null == t ? void 0 : t.message) ? o : t);
@@ -1507,20 +1512,20 @@ function tt() {
                 };
             });
             if ("done" === e.state && e.account) return [
-                e4(e.account)
+                e7(e.account)
             ];
             if ("unknown" === e.state) {
                 var n;
                 return [
-                    e7("登录没走完（把这段发我）", null != (n = e.debug) ? n : "没有详情")
+                    e9("登录没走完（把这段发我）", null != (n = e.debug) ? n : "没有详情")
                 ];
             }
             if ("expired" !== e.state) return [
-                e9(t.qr, "scanned" === e.state ? "已扫码，请在手机上点确认" : "用汽水音乐 App 扫码登录")
+                te(t.qr, "scanned" === e.state ? "已扫码，请在手机上点确认" : "用汽水音乐 App 扫码登录")
             ];
         }
         return [
-            e9((yield Q(function*() {
+            te((yield Q(function*() {
                 var e, t;
                 let n = function() {
                     let e = [];
@@ -1537,7 +1542,7 @@ function tt() {
                             255 & n
                         ]))), n++;
                     }
-                    return q(t) % (0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n - 1n) + 1n;
+                    return I(t) % (0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n - 1n) + 1n;
                 }(), r = function(e) {
                     var t;
                     let n, r = F(L({
@@ -1556,8 +1561,8 @@ function tt() {
                     ]))), J(0xa0)), a = K(e, o), u = J(0x30, o, J(0x30, G("2a8648ce3d040302")), J(0x03, [
                         0x00,
                         ...a
-                    ])), c = `-----BEGIN CERTIFICATE REQUEST-----\n${null == (t = C(u).match(/.{1,64}/g)) ? void 0 : t.join("\n")}\n-----END CERTIFICATE REQUEST-----\n`;
-                    return C(D(c));
+                    ])), c = `-----BEGIN CERTIFICATE REQUEST-----\n${null == (t = N(u).match(/.{1,64}/g)) ? void 0 : t.join("\n")}\n-----END CERTIFICATE REQUEST-----\n`;
+                    return N(D(c));
                 }(n), i = null == (e = (yield ea(`https://open.douyin.com/oauth/get_qrcode/?${ey()}`)).data) ? void 0 : e.data;
                 if (!(null == i ? void 0 : i.token) || !(null == i ? void 0 : i.qrcode_index_url)) throw Error("二维码生成失败，请稍后重试");
                 let l = Date.now() + 300000, o = yield (t = String(i.qrcode_index_url), Q(function*() {
@@ -1576,7 +1581,7 @@ function tt() {
                     } catch (e) {}
                     return n[0];
                 })());
-                return es(er, {
+                return ed(er, {
                     token: String(i.token),
                     key: n.toString(16),
                     csr: r,
@@ -1590,7 +1595,7 @@ function tt() {
         ];
     })();
 }
-function tn(e, t, n, r, i, l, o) {
+function tr(e, t, n, r, i, l, o) {
     try {
         var a = e[l](o), u = a.value;
     } catch (e) {
@@ -1599,28 +1604,28 @@ function tn(e, t, n, r, i, l, o) {
     }
     a.done ? t(u) : Promise.resolve(u).then(r, i);
 }
-function tr(e) {
+function ti(e) {
     return function() {
         var t = this, n = arguments;
         return new Promise(function(r, i) {
             var l = e.apply(t, n);
             function o(e) {
-                tn(l, r, i, o, a, "next", e);
+                tr(l, r, i, o, a, "next", e);
             }
             function a(e) {
-                tn(l, r, i, o, a, "throw", e);
+                tr(l, r, i, o, a, "throw", e);
             }
             o(void 0);
         });
     };
 }
-let ti = "0.3.0";
+let tl = "0.3.1";
 WidgetMetadata = {
     id: "qishui.music",
     title: "汽水音乐",
     description: "汽水音乐插件，基于车机开放接口：扫码登录后可用我的歌单与最近播放，另有每日推荐、新歌、猜你喜欢、专辑、歌单、场景、歌手、搜索、播放与时间轴歌词。免费曲目可完整播放，会员曲目只有试听片段",
     author: "self-hosted",
-    version: ti,
+    version: tl,
     iconurl: "https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@main/assets/icon.png",
     requiredVersion: "0.0.7",
     contentType: "music",
@@ -1776,33 +1781,33 @@ WidgetMetadata = {
             }
         ]
     }
-}, loadLogin = ()=>tr(function*() {
-        return tt();
-    })(), loadMyPlaylists = ()=>tr(function*() {
+}, loadLogin = ()=>ti(function*() {
+        return tn();
+    })(), loadMyPlaylists = ()=>ti(function*() {
         return function(e = 50) {
             return eN(function*() {
                 if (!ep()) return [
-                    te()
+                    tt()
                 ];
                 try {
                     let t = yield eS(e);
                     if (!t.length) return [
-                        e7("还没有歌单", "账号里没有自建或收藏的歌单")
+                        e9("还没有歌单", "账号里没有自建或收藏的歌单")
                     ];
-                    return t.map(eG);
+                    return t.map(eK);
                 } catch (e) {
                     var t;
                     return [
-                        e7("歌单读取失败", String(null != (t = e.message) ? t : e).slice(0, 90))
+                        e9("歌单读取失败", String(null != (t = e.message) ? t : e).slice(0, 90))
                     ];
                 }
             })();
         }();
-    })(), loadRecentPlayed = ()=>tr(function*() {
+    })(), loadRecentPlayed = ()=>ti(function*() {
         return function(e = 50) {
             return eN(function*() {
                 if (!ep()) return [
-                    te()
+                    tt()
                 ];
                 try {
                     let t = yield function(e = 50) {
@@ -1831,26 +1836,26 @@ WidgetMetadata = {
                         })();
                     }(e);
                     if (!t.length) return [
-                        e7("还没有播放记录", "在汽水音乐里听几首歌再回来")
+                        e9("还没有播放记录", "在汽水音乐里听几首歌再回来")
                     ];
-                    return t.map((e)=>eU(A(e)));
+                    return t.map((e)=>eR(A(e)));
                 } catch (e) {
                     var t;
                     return [
-                        e7("最近播放读取失败", String(null != (t = e.message) ? t : e).slice(0, 90))
+                        e9("最近播放读取失败", String(null != (t = e.message) ? t : e).slice(0, 90))
                     ];
                 }
             })();
         }();
-    })(), logoutAccount = ()=>tr(function*() {
-        return ed(en), ed(er), {
+    })(), logoutAccount = ()=>ti(function*() {
+        return es(en), es(er), {
             message: "已退出登录",
             refresh: !0
         };
-    })(), loadScenes = ()=>tr(function*() {
+    })(), loadScenes = ()=>ti(function*() {
         return eN(function*() {
             return (yield t(function*() {
-                let e = yield d("/feed/mode/", {});
+                let e = yield s("/feed/mode/", {});
                 return (Array.isArray(e.feed_mode_block) ? e.feed_mode_block : []).flatMap((e)=>{
                     var t;
                     return (null != (t = e.feed_mode) ? t : []).flatMap((t)=>{
@@ -1866,11 +1871,11 @@ WidgetMetadata = {
                         ];
                     });
                 });
-            })()).map((e)=>(eR.set(e.id, e.name), eC({
+            })()).map((e)=>(eW.set(e.id, e.name), eE({
                     id: `scene-${e.id}`,
                     type: "url",
                     mediaType: "playlist",
-                    link: ez(e.id),
+                    link: eT(e.id),
                     title: e.name
                 }, e.group ? {
                     subtitle: e.group
@@ -1879,29 +1884,29 @@ WidgetMetadata = {
                     coverUrl: e.cover
                 } : {})));
         })();
-    })(), loadRecommend = ()=>tr(function*() {
+    })(), loadRecommend = ()=>ti(function*() {
         return eN(function*() {
-            return (yield O(null, 30)).map((e)=>eU(A(e)));
+            return (yield O(null, 30)).map((e)=>eR(A(e)));
         })();
-    })(), loadDaily = ()=>tr(function*() {
-        return eJ("daily", 30);
-    })(), loadFresh = ()=>tr(function*() {
-        return eJ("fresh", 30);
-    })(), loadFamiliar = ()=>tr(function*() {
-        return eJ("familiar", 30);
-    })(), loadAlbums = ()=>tr(function*() {
+    })(), loadDaily = ()=>ti(function*() {
+        return eY("daily", 30);
+    })(), loadFresh = ()=>ti(function*() {
+        return eY("fresh", 30);
+    })(), loadFamiliar = ()=>ti(function*() {
+        return eY("familiar", 30);
+    })(), loadAlbums = ()=>ti(function*() {
         return function(e = 10) {
             return eN(function*() {
-                return eF((yield O(null, 30, "daily")), e);
+                return eJ((yield O(null, 30, "daily")), e);
             })();
         }(10);
-    })(), loadArtists = (e)=>tr(function*() {
+    })(), loadArtists = (e)=>ti(function*() {
         return function() {
             return eN(function*(e = {}) {
                 var t, n;
                 let r = String(null != (t = null != (n = e.peopleId) ? n : e.id) ? t : "").trim();
                 return /^\d{1,30}$/.test(r) ? [
-                    (yield eQ(r))
+                    (yield eV(r))
                 ] : function(e = 18) {
                     return eN(function*() {
                         let t = yield Promise.all([
@@ -1911,21 +1916,21 @@ WidgetMetadata = {
                         ].map((e)=>h(e, 10).catch(()=>[]))), n = new Set(), r = [];
                         for (let i of t.flat()){
                             let t = g(i);
-                            if (!(!t.id || n.has(t.id) || eH.test(t.name)) && !(t.name.length > 20) && !(t.trackCount < 1) && (n.add(t.id), r.push(eW(t)), r.length >= e)) break;
+                            if (!(!t.id || n.has(t.id) || eQ.test(t.name)) && !(t.name.length > 20) && !(t.trackCount < 1) && (n.add(t.id), r.push(eL(t)), r.length >= e)) break;
                         }
                         return r;
                     })();
                 }();
             }).apply(this, arguments);
         }(e);
-    })(), loadHotPlaylists = ()=>tr(function*() {
-        return eK("热歌", 10);
-    })(), loadClassicPlaylists = ()=>tr(function*() {
-        return eK("经典老歌", 10);
-    })(), loadSubtitle = (e)=>tr(function*() {
+    })(), loadHotPlaylists = ()=>ti(function*() {
+        return eH("热歌", 10);
+    })(), loadClassicPlaylists = ()=>ti(function*() {
+        return eH("经典老歌", 10);
+    })(), loadSubtitle = (e)=>ti(function*() {
         return eN(function*() {
             var t, n, r, i, l;
-            let o, a = e.link ? eT(e.link) : null, u = (null == a ? void 0 : a.kind) === "track" ? a.id : /^\d{1,30}$/.test(String(null != (t = e.id) ? t : "")) ? String(e.id) : "";
+            let o, a = e.link ? eB(e.link) : null, u = (null == a ? void 0 : a.kind) === "track" ? a.id : /^\d{1,30}$/.test(String(null != (t = e.id) ? t : "")) ? String(e.id) : "";
             if (!u) return [];
             let { original: c, translation: f } = {
                 original: String(null != (n = null == (o = null == (i = (yield j(u)).display_info) ? void 0 : i.lyric_info) || null == (l = o.lyric_entity) ? void 0 : l.content) ? n : ""),
@@ -1933,61 +1938,61 @@ WidgetMetadata = {
                     var t;
                     return String(null != (t = null == e ? void 0 : e.content) ? t : "");
                 }).find((e)=>e.trim().length > 0)
-            }, s = [];
+            }, d = [];
             if (c && f) {
-                let e, t = (e = new Map(e1(f).map((e)=>[
+                let e, t = (e = new Map(e2(f).map((e)=>[
                         e.ms,
                         e.text
-                    ])), e1(c).map((t)=>{
+                    ])), e2(c).map((t)=>{
                     let n = e.get(t.ms), r = n && n !== t.text ? `${t.text} / ${n}` : t.text;
-                    return `${e2(t.ms)}${r}`;
+                    return `${e3(t.ms)}${r}`;
                 }).join("\n"));
-                t && s.push({
+                t && d.push({
                     id: `qishui:lyric:${u}:bilingual`,
                     title: "双语歌词",
                     lang: "zh-CN",
-                    url: e5(t)
+                    url: e8(t)
                 });
             }
-            let d = c ? e3(c) : "", p = f ? e3(f) : "";
-            return d && s.push({
+            let s = c ? e6(c) : "", p = f ? e6(f) : "";
+            return s && d.push({
                 id: `qishui:lyric:${u}:original`,
                 title: "原文歌词",
                 lang: "und",
-                url: e5(d)
-            }), p && s.push({
+                url: e8(s)
+            }), p && d.push({
                 id: `qishui:lyric:${u}:translation`,
                 title: "中文翻译",
                 lang: "zh-CN",
-                url: e5(p)
-            }), s;
+                url: e8(p)
+            }), d;
         })();
-    })(), search = (e)=>tr(function*() {
+    })(), search = (e)=>ti(function*() {
         return eN(function*() {
             var t, n;
             let r = String(null != (t = e.keyword) ? t : "").trim();
             if (!r) return [];
             let i = String(null != (n = e.kind) ? n : "all");
-            if ("artists" === i) return (yield h(r, 20)).map((e)=>eW(g(e)));
-            if ("playlists" === i) return eK(r, 30);
-            if ("albums" === i) return eF((yield y(r, 40)), 12);
-            if ("songs" === i || "tracks" === i) return (yield y(r, 40)).map((e)=>eU(A(e)));
+            if ("artists" === i) return (yield h(r, 20)).map((e)=>eL(g(e)));
+            if ("playlists" === i) return eH(r, 30);
+            if ("albums" === i) return eJ((yield y(r, 40)), 12);
+            if ("songs" === i || "tracks" === i) return (yield y(r, 40)).map((e)=>eR(A(e)));
             let [l, o, a] = yield Promise.all([
                 h(r, 12).catch(()=>[]),
                 y(r, 20).catch(()=>[]),
                 m(r, 8).catch(()=>[])
-            ]), u = yield eF(o, 6).catch(()=>[]);
+            ]), u = yield eJ(o, 6).catch(()=>[]);
             return [
-                ...l.map((e)=>eW(g(e))),
+                ...l.map((e)=>eL(g(e))),
                 ...u,
-                ...o.map((e)=>eU(A(e))),
-                ...a.map(eG)
+                ...o.map((e)=>eR(A(e))),
+                ...a.map(eK)
             ];
         })();
-    })(), loadDetail = (e)=>tr(function*() {
+    })(), loadDetail = (e)=>ti(function*() {
         return eN(function*() {
             var t, n, r, i, l;
-            let o = eT(e);
+            let o = eB(e);
             if (!o) throw Error(`无法识别的链接：${e}`);
             return "track" === o.kind ? (t = o.id, eN(function*() {
                 var e, n;
@@ -1995,7 +2000,7 @@ WidgetMetadata = {
                 try {
                     r = yield j(t);
                 } catch (e) {
-                    return e7("这首歌打不开", `id ${t}`, String(null != (n = null == e ? void 0 : e.message) ? n : e).slice(0, 100));
+                    return e9("这首歌打不开", `id ${t}`, String(null != (n = null == e ? void 0 : e.message) ? n : e).slice(0, 100));
                 }
                 let i = A(r), l = null != (e = yield P(r).catch(()=>null)) ? e : yield eN(function*() {
                     var e;
@@ -2009,57 +2014,57 @@ WidgetMetadata = {
                     }
                     return null;
                 })();
-                if (!(null == l ? void 0 : l.url)) return eE(eC({}, eU(i)), {
-                    link: eI(t),
+                if (!(null == l ? void 0 : l.url)) return eI(eE({}, eR(i)), {
+                    link: eM(t),
                     description: "汽水没给这首歌播放地址（导入或已下架），换一首试试。"
                 });
                 let o = [
-                    eB(i.durationMs),
+                    eU(i.durationMs),
                     l.preview ? "仅试听片段" : ""
                 ].filter(Boolean).join(" · ");
-                return eE(eC({}, eU(i), o ? {
+                return eI(eE({}, eR(i), o ? {
                     description: o
                 } : {}), {
                     videoUrl: l.url
                 });
             })()) : "scene" === o.kind ? (n = o.id, eN(function*() {
                 var e;
-                let t = (yield O(n, 40)).map((e)=>eU(A(e)));
+                let t = (yield O(n, 40)).map((e)=>eR(A(e)));
                 return {
                     id: `scene-${n}`,
                     type: "url",
                     mediaType: "playlist",
-                    link: ez(n),
-                    title: null != (e = eR.get(n)) ? e : "场景推荐",
+                    link: eT(n),
+                    title: null != (e = eW.get(n)) ? e : "场景推荐",
                     description: `${t.length} 首`,
                     tracks: t
                 };
-            })()) : "artist" === o.kind ? eQ(o.id) : "album" === o.kind ? (r = o.id, eN(function*() {
+            })()) : "artist" === o.kind ? eV(o.id) : "album" === o.kind ? (r = o.id, eN(function*() {
                 let { album: e, entities: t } = yield _(r), n = v(e);
-                return eE(eC({}, eL(n), n.intro ? {
+                return eI(eE({}, eF(n), n.intro ? {
                     description: n.intro.slice(0, 300)
                 } : {}), {
-                    tracks: t.map((e)=>eU(A(e)))
+                    tracks: t.map((e)=>eR(A(e)))
                 });
-            })()) : "login" === o.kind ? (yield tt())[0] : (i = o.id, l = o.ownerId, eN(function*() {
+            })()) : "login" === o.kind ? (yield tn())[0] : (i = o.id, l = o.ownerId, eN(function*() {
                 var e, t, n, r, o, a, c, f;
-                let s = [
+                let d = [
                     [
                         "匿名",
                         ()=>$(i, l)
                     ]
                 ];
-                l && s.push([
+                l && d.push([
                     "匿名·无作者",
                     ()=>$(i, "")
                 ]);
-                let d = ep();
-                d && (s.push([
+                let s = ep();
+                s && (d.push([
                     "账号票据",
                     ()=>ew(i, l)
-                ]), d.userId && d.userId !== l && s.push([
+                ]), s.userId && s.userId !== l && d.push([
                     "账号票据·本人",
-                    ()=>ew(i, d.userId)
+                    ()=>ew(i, s.userId)
                 ]));
                 let p = [], y = null, m = (e, t)=>eN(function*() {
                         try {
@@ -2073,7 +2078,7 @@ WidgetMetadata = {
                         }
                         return !1;
                     })();
-                for (let [e, t] of s)if (yield m(e, t)) break;
+                for (let [e, t] of d)if (yield m(e, t)) break;
                 let h = [], g = "";
                 if (!y) {
                     let e = yield eN(function*() {
@@ -2087,25 +2092,25 @@ WidgetMetadata = {
                             count: 0
                         };
                         if (!ep()) return f;
-                        let s = (yield eS(50).catch(()=>[])).find((e)=>{
+                        let d = (yield eS(50).catch(()=>[])).find((e)=>{
                             var t, n;
                             return String(null != (t = null == (n = e.base_info) ? void 0 : n.id) ? t : "") === i;
                         });
-                        if (!s) return f;
-                        let d = [], p = [], y = (e, t, n)=>{
+                        if (!d) return f;
+                        let s = [], p = [], y = (e, t, n)=>{
                             if (e && !(n > 3)) {
-                                if ("string" == typeof e) return void (e.startsWith("_000") ? p.push(e) : /^\d{15,20}$/.test(e) && (/owner|creator|author|user|uid|sec/i.test(t) ? p.push(e) : d.push(e)));
+                                if ("string" == typeof e) return void (e.startsWith("_000") ? p.push(e) : /^\d{15,20}$/.test(e) && (/owner|creator|author|user|uid|sec/i.test(t) ? p.push(e) : s.push(e)));
                                 if ("object" == typeof e) for(let t in e)y(e[t], t, n + 1);
                             }
                         };
-                        for(let e in s)y(s[e], e, 0);
+                        for(let e in d)y(d[e], e, 0);
                         return {
-                            ids: eV(d.filter((e)=>e !== i)).slice(0, 3),
-                            owners: eV(p.filter((e)=>e !== i)).slice(0, 3),
-                            keys: Object.keys(null != (e = s.base_info) ? e : {}),
-                            dump: JSON.stringify(null != (t = s.base_info) ? t : s).slice(0, 420),
-                            title: String(null != (n = null != (r = null == (a = s.base_info) ? void 0 : a.title) ? r : null == (u = s.base_info) ? void 0 : u.name) ? n : ""),
-                            count: Number(null != (l = null != (o = null == (c = s.resource_cnt) ? void 0 : c.track_cnt) ? o : s.resource_cnt) ? l : 0) || 0
+                            ids: eZ(s.filter((e)=>e !== i)).slice(0, 3),
+                            owners: eZ(p.filter((e)=>e !== i)).slice(0, 3),
+                            keys: Object.keys(null != (e = d.base_info) ? e : {}),
+                            dump: JSON.stringify(null != (t = d.base_info) ? t : d).slice(0, 420),
+                            title: String(null != (n = null != (r = null == (a = d.base_info) ? void 0 : a.title) ? r : null == (u = d.base_info) ? void 0 : u.name) ? n : ""),
+                            count: Number(null != (l = null != (o = null == (c = d.resource_cnt) ? void 0 : c.track_cnt) ? o : d.resource_cnt) ? l : 0) || 0
                         };
                     })();
                     h = e.keys, g = e.dump, e.title;
@@ -2114,7 +2119,7 @@ WidgetMetadata = {
                         i,
                         ...e.ids
                     ]){
-                        for (let r of eV([
+                        for (let r of eZ([
                             l,
                             ...e.owners
                         ]))if (t-- <= 0 || (n !== i || r !== l) && (yield m(`匿名 ${n.slice(-6)}/${r.slice(-6) || "-"}`, ()=>$(n, r)))) break;
@@ -2127,7 +2132,7 @@ WidgetMetadata = {
                         id: i,
                         type: "url",
                         mediaType: "playlist",
-                        link: eM(i, l),
+                        link: ez(i, l),
                         title: e(`读不到 · ${t}`, 60),
                         subtitle: e(r, 80),
                         description: `接口反馈：${p.join(" / ").slice(0, 260)} · 匿名：${n}`
@@ -2141,20 +2146,20 @@ WidgetMetadata = {
                     id: i,
                     type: "url",
                     mediaType: "playlist",
-                    link: eM(i, l),
+                    link: ez(i, l),
                     title: "这个歌单里没有可播的曲目",
                     subtitle: "接口返回了歌单信息，但曲目列表是空的"
                 };
-                let k = b.map((e)=>eU(A(e))), x = null != (e = null == _ ? void 0 : _.base_info) ? e : {}, S = u(null == _ || null == (o = _.display_info) ? void 0 : o.url_cover), w = null == _ || null == (c = _.relation_info) || null == (a = c.owner) ? void 0 : a.name, O = eY(Number(null != (t = null == _ || null == (f = _.stats) ? void 0 : f.count_collected) ? t : 0)), j = [
+                let k = b.map((e)=>eR(A(e))), x = null != (e = null == _ ? void 0 : _.base_info) ? e : {}, S = u(null == _ || null == (o = _.display_info) ? void 0 : o.url_cover), w = null == _ || null == (c = _.relation_info) || null == (a = c.owner) ? void 0 : a.name, O = eG(Number(null != (t = null == _ || null == (f = _.stats) ? void 0 : f.count_collected) ? t : 0)), j = [
                     w,
                     O ? `${O} 收藏` : "",
                     k.length ? `${k.length} 首` : ""
                 ].filter(Boolean).join(" · ");
-                return eE(eC({
+                return eI(eE({
                     id: i,
                     type: "url",
                     mediaType: "playlist",
-                    link: eM(i, l),
+                    link: ez(i, l),
                     title: String(null != (n = null != (r = x.title) ? r : x.name) ? n : "歌单")
                 }, j ? {
                     subtitle: j
@@ -2168,27 +2173,27 @@ WidgetMetadata = {
                 });
             })());
         })();
-    })(), loadDiag = ()=>tr(function*() {
+    })(), loadDiag = ()=>ti(function*() {
         return ej(function*() {
-            var e, t, n, r, i, l, o, a, u, c;
-            let f = [], s = ep();
-            f.push(eA("插件版本", ti)), f.push(s ? eA("登录状态", `已登录 uid=${s.userId} ${s.nickname || ""}`) : eA("登录状态", "未登录（账号接口全部用不了）"));
-            let d = [];
+            var e, t, n, r, i, l, o, a, u, c, f, d, s;
+            let p = [], y = ep();
+            p.push(eA("插件版本", tl)), p.push(y ? eA("登录状态", `已登录 uid=${y.userId} ${y.nickname || ""}`) : eA("登录状态", "未登录（账号接口全部用不了）"));
+            let m = [];
             try {
-                d = yield eS(50), f.push(eA("歌单列表", `拿到 ${d.length} 个`));
+                m = yield eS(50), p.push(eA("歌单列表", `拿到 ${m.length} 个`));
             } catch (e) {
-                return f.push(eA("歌单列表", `失败 ${eP(e)}`)), f;
+                return p.push(eA("歌单列表", `失败 ${eP(e)}`)), p;
             }
-            if (!d.length) return f;
-            let p = d.reduce((e, t)=>{
+            if (!m.length) return p;
+            let h = m.reduce((e, t)=>{
                 let n = (e)=>{
                     var t, n, r;
                     return Number(null != (t = null != (n = null == (r = e.resource_cnt) ? void 0 : r.track_cnt) ? n : e.resource_cnt) ? t : 0) || 0;
                 };
                 return n(t) > n(e) ? t : e;
-            }, d[0]), y = String(null != (e = null == (n = p.base_info) ? void 0 : n.id) ? e : ""), m = String(null != (t = null == (r = p.base_info) ? void 0 : r.owner_id) ? t : "");
-            for (let e of d){
-                let t = String(null != (i = null == (a = e.base_info) ? void 0 : a.id) ? i : ""), n = String(null != (l = null == (u = e.base_info) ? void 0 : u.owner_id) ? l : ""), r = String(null != (o = null == (c = e.base_info) ? void 0 : c.title) ? o : "未命名").slice(0, 14), s = yield function(e, t) {
+            }, m[0]), g = String(null != (e = null == (n = h.base_info) ? void 0 : n.id) ? e : ""), v = String(null != (t = null == (r = h.base_info) ? void 0 : r.owner_id) ? t : "");
+            for (let e of m){
+                let t = String(null != (i = null == (a = e.base_info) ? void 0 : a.id) ? i : ""), n = String(null != (l = null == (u = e.base_info) ? void 0 : u.owner_id) ? l : ""), r = String(null != (o = null == (c = e.base_info) ? void 0 : c.title) ? o : "未命名").slice(0, 14), y = yield function(e, t) {
                     return ej(function*() {
                         try {
                             let n = yield $(e, t, 5);
@@ -2197,57 +2202,55 @@ WidgetMetadata = {
                             return `匿名 ✗${eP(e)}`;
                         }
                     })();
-                }(t, n), d = yield function(e, t) {
-                    return ej(function*() {
-                        let n = [];
-                        try {
-                            let i = yield e$("/playlist/detail/", {
-                                playlist_id: e,
-                                owner_id: t,
-                                count: 100,
-                                cursor: "0",
-                                type: null
-                            }), l = Array.isArray(i.media_entities) ? i.media_entities : [], o = Object.keys(i).join(","), a = `账号 ok rows=${l.length} keys=${o}`;
-                            if (l.length) n.push(`row0 ${JSON.stringify(l[0]).slice(0, 300)}`);
-                            else {
-                                var r;
-                                n.push(`playlist ${JSON.stringify(null != (r = i.playlist) ? r : {}).slice(0, 300)}`);
-                            }
-                            return {
-                                line: a,
-                                detail: n
-                            };
-                        } catch (e) {
-                            return {
-                                line: `账号 ✗${eP(e)}`,
-                                detail: n
-                            };
-                        }
-                    })();
                 }(t, n);
-                f.push(eA(`${r}`, `${s} | ${d.line}`)), t === y && f.push(...function(e, t) {
-                    let n = String(t || "空").replace(/\s+/g, " ").trim(), r = [];
-                    for(let e = 0; e < n.length; e += 52)r.push(n.slice(e, e + 52));
-                    return r.length || r.push("空"), r.map((t, n)=>eA(r.length > 1 ? `${e} ${n + 1}/${r.length}` : e, t));
-                }(`${r} 明细`, d.detail.join(" ‖ ")));
+                if (p.push(eA(`${r}`, y)), t === g) {
+                    let t = JSON.stringify({
+                        base_info: null != (f = e.base_info) ? f : {},
+                        relation_info: null != (d = e.relation_info) ? d : {},
+                        stats: null != (s = e.stats) ? s : {},
+                        keys: Object.keys(e)
+                    });
+                    p.push(...eD(`${r} 行`, t));
+                }
             }
+            let _ = new Set(), b = (e, t)=>{
+                if (e && !(t > 4)) {
+                    if ("string" == typeof e) {
+                        /^(_000[\w-]+|\d{15,20})$/.test(e) && _.add(e);
+                        return;
+                    }
+                    if (Array.isArray(e)) {
+                        for (let n of e)b(n, t + 1);
+                        return;
+                    }
+                    if ("object" == typeof e) for(let n in e)b(e[n], t + 1);
+                }
+            };
+            b(h, 0), (null == y ? void 0 : y.userId) && _.add(y.userId);
+            let k = [];
             for (let e of [
-                "/playlist/media/",
-                "/me/playlist/media/",
-                "/me/media/",
-                "/playlist/item/",
-                "/playlist/tracks/"
-            ])try {
-                let t = yield e$(e, {
-                    playlist_id: y,
-                    owner_id: m,
-                    count: 20,
-                    cursor: "0"
-                }), n = Object.keys(t).join(","), r = Object.values(t).find((e)=>Array.isArray(e));
-                f.push(eA(`探 ${e}`, `ok keys=${n} 数组=${r ? r.length : 0}`));
-            } catch (t) {
-                f.push(eA(`探 ${e}`, `✗${eP(t)}`));
+                g,
+                ..._
+            ])for (let t of [
+                v,
+                ..._,
+                ""
+            ]){
+                if (k.length >= 10) break;
+                (e !== g || t !== v && "" !== t) && k.push([
+                    e,
+                    t
+                ]);
             }
-            return f;
+            let x = k.length, S = (yield Promise.all(k.map(([e, t])=>$(e, t, 3).then((n)=>({
+                        candidateId: e,
+                        candidateOwner: t,
+                        count: n.entities.length
+                    })).catch(()=>({
+                        candidateId: e,
+                        candidateOwner: t,
+                        count: 0
+                    }))))).filter((e)=>e.count > 0).map((e)=>`✓曲${e.count} id…${e.candidateId.slice(-5)} owner…${e.candidateOwner.slice(-5) || "空"}`);
+            return p.push(...eD("组合试", S.length ? S.slice(0, 4).join(" ; ") : `${x} 组全失败`)), p;
         })();
     })();

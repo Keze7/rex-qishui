@@ -1,6 +1,6 @@
 // 诊断模块：只做一件事——把「账号歌单详情为什么读不到曲目」的真实返回值摊开。
 // 宿主对没有可播曲目的条目只会丢进播放器，描述文字不渲染，所以诊断必须在列表层出结果。
-import { accountPlatform, getAccount, myPlaylists } from "./account";
+import { getAccount, myPlaylists } from "./account";
 import { type Json, playlistTracks } from "./api";
 
 const LINK = "qishui:login";
@@ -32,31 +32,6 @@ async function probeAnonymous(id: string, owner: string): Promise<string> {
     return `匿名 ok 曲${result.entities.length}`;
   } catch (error) {
     return `匿名 ✗${reason(error)}`;
-  }
-}
-
-async function probeAccount(id: string, owner: string): Promise<{ line: string; detail: string[] }> {
-  const detail: string[] = [];
-  try {
-    const data = await accountPlatform<Json>("/playlist/detail/", {
-      playlist_id: id,
-      owner_id: owner,
-      count: 100,
-      cursor: "0",
-      type: null,
-    });
-    const rows: Json[] = Array.isArray(data.media_entities) ? data.media_entities : [];
-    const keys = Object.keys(data).join(",");
-    const line = `账号 ok rows=${rows.length} keys=${keys}`;
-    if (rows.length) {
-      detail.push(`row0 ${JSON.stringify(rows[0]).slice(0, 300)}`);
-    } else {
-      // 没行的时候，最有价值的是 playlist 对象里的计数（能确认服务端到底认不认这歌单）
-      detail.push(`playlist ${JSON.stringify(data.playlist ?? {}).slice(0, 300)}`);
-    }
-    return { line, detail };
-  } catch (error) {
-    return { line: `账号 ✗${reason(error)}`, detail };
   }
 }
 
@@ -93,27 +68,56 @@ export async function handleDiag(version: string): Promise<VideoItem[]> {
     const owner = String(row.base_info?.owner_id ?? "");
     const title = String(row.base_info?.title ?? "未命名").slice(0, 14);
     const anon = await probeAnonymous(id, owner);
-    const acc = await probeAccount(id, owner);
-    out.push(item(`${title}`, `${anon} | ${acc.line}`));
-    if (id === targetId) out.push(...spill(`${title} 明细`, acc.detail.join(" ‖ ")));
-  }
-
-  // 账号作用域里可能藏着别的歌单曲目端点，一次探完
-  const candidates = ["/playlist/media/", "/me/playlist/media/", "/me/media/", "/playlist/item/", "/playlist/tracks/"];
-  for (const path of candidates) {
-    try {
-      const data = await accountPlatform<Json>(path, {
-        playlist_id: targetId,
-        owner_id: targetOwner,
-        count: 20,
-        cursor: "0",
+    out.push(item(`${title}`, anon));
+    // 打不开的那张：把账号里的整行原样摊开，owner / mix / share 这类 id 都在这行里
+    if (id === targetId) {
+      const dump = JSON.stringify({
+        base_info: row.base_info ?? {},
+        relation_info: row.relation_info ?? {},
+        stats: row.stats ?? {},
+        keys: Object.keys(row),
       });
-      const keys = Object.keys(data).join(",");
-      const rowsOf = Object.values(data).find((value) => Array.isArray(value)) as unknown[] | undefined;
-      out.push(item(`探 ${path}`, `ok keys=${keys} 数组=${rowsOf ? rowsOf.length : 0}`));
-    } catch (error) {
-      out.push(item(`探 ${path}`, `✗${reason(error)}`));
+      out.push(...spill(`${title} 行`, dump));
     }
   }
+
+  // 行里所有像 id 的字符串，两两组合喂给匿名详情：owner 填错是 28001035 最常见的原因
+  const ids = new Set<string>();
+  const harvest = (node: any, depth: number) => {
+    if (!node || depth > 4) return;
+    if (typeof node === "string") {
+      if (/^(_000[\w-]+|\d{15,20})$/.test(node)) ids.add(node);
+      return;
+    }
+    if (Array.isArray(node)) {
+      for (const value of node) harvest(value, depth + 1);
+      return;
+    }
+    if (typeof node === "object") for (const key in node) harvest(node[key], depth + 1);
+  };
+  harvest(target, 0);
+  if (account?.userId) ids.add(account.userId);
+
+  // 组合最多 10 组，并发发出去（详情接口没有 feed 那种单流限制），避免模块加载超时
+  const combos: Array<[string, string]> = [];
+  for (const candidateId of [targetId, ...ids]) {
+    for (const candidateOwner of [targetOwner, ...ids, ""]) {
+      if (combos.length >= 10) break;
+      if (candidateId === targetId && (candidateOwner === targetOwner || candidateOwner === "")) continue;
+      combos.push([candidateId, candidateOwner]);
+    }
+  }
+  const tried = combos.length;
+  const results = await Promise.all(
+    combos.map(([candidateId, candidateOwner]) =>
+      playlistTracks(candidateId, candidateOwner, 3)
+        .then((result) => ({ candidateId, candidateOwner, count: result.entities.length }))
+        .catch(() => ({ candidateId, candidateOwner, count: 0 })),
+    ),
+  );
+  const hits = results
+    .filter((entry) => entry.count > 0)
+    .map((entry) => `✓曲${entry.count} id…${entry.candidateId.slice(-5)} owner…${entry.candidateOwner.slice(-5) || "空"}`);
+  out.push(...spill("组合试", hits.length ? hits.slice(0, 4).join(" ; ") : `${tried} 组全失败`));
   return out;
 }
