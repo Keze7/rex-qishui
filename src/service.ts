@@ -98,7 +98,8 @@ function toRexArtist(ref: ArtistRef): VideoItem {
     title: ref.name,
     ...(subtitle ? { subtitle } : {}),
     ...(ref.avatar ? { avatar: ref.avatar, posterPath: ref.avatar, coverUrl: ref.avatar } : {}),
-    ...(ref.intro ? { description: ref.intro.slice(0, 120) } : {}),
+    // 首页卡片只认 description；放「N 首 · N 张专辑」比放简介更适合当副标题
+    ...(subtitle ? { description: subtitle } : {}),
   };
 }
 function toRexAlbum(ref: AlbumRef): VideoItem {
@@ -112,8 +113,8 @@ function toRexAlbum(ref: AlbumRef): VideoItem {
     link: albumLink(ref.id),
     title: ref.name,
     ...(subtitle ? { subtitle } : {}),
+    ...(subtitle ? { description: subtitle } : {}),
     ...(ref.cover ? { posterPath: ref.cover, coverUrl: ref.cover } : {}),
-    ...(ref.intro ? { description: ref.intro.slice(0, 150) } : {}),
   };
 }
 
@@ -143,7 +144,7 @@ export async function handleScenes(): Promise<VideoItem[]> {
       mediaType: "playlist",
       link: sceneLink(mode.id),
       title: mode.name,
-      ...(mode.group ? { subtitle: mode.group } : {}),
+      ...(mode.group ? { subtitle: mode.group, description: mode.group } : {}),
       ...(mode.cover ? { posterPath: mode.cover, coverUrl: mode.cover } : {}),
     };
   });
@@ -202,6 +203,7 @@ function toRexPlaylist(row: Json): VideoItem {
     link: playlistLink(String(base.id), String(base.owner_id ?? "")),
     title: String(base.title ?? base.name ?? "歌单"),
     ...(subtitle ? { subtitle } : {}),
+    ...(subtitle ? { description: subtitle } : {}),
     ...(cover ? { posterPath: cover, coverUrl: cover } : {}),
   };
 }

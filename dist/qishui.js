@@ -1178,8 +1178,8 @@ function eL(e) {
         avatar: e.avatar,
         posterPath: e.avatar,
         coverUrl: e.avatar
-    } : {}, e.intro ? {
-        description: e.intro.slice(0, 120)
+    } : {}, n ? {
+        description: n
     } : {});
 }
 function eF(e) {
@@ -1197,11 +1197,11 @@ function eF(e) {
         title: e.name
     }, r ? {
         subtitle: r
+    } : {}, r ? {
+        description: r
     } : {}, e.cover ? {
         posterPath: e.cover,
         coverUrl: e.cover
-    } : {}, e.intro ? {
-        description: e.intro.slice(0, 150)
     } : {});
 }
 function eJ(e, t = 8) {
@@ -1255,6 +1255,8 @@ function eK(e) {
         title: String(null != (l = null != (o = d.title) ? o : d.name) ? l : "歌单")
     }, m ? {
         subtitle: m
+    } : {}, m ? {
+        description: m
     } : {}, s ? {
         posterPath: s,
         coverUrl: s
@@ -1890,7 +1892,8 @@ WidgetMetadata = {
                     link: eT(e.id),
                     title: e.name
                 }, e.group ? {
-                    subtitle: e.group
+                    subtitle: e.group,
+                    description: e.group
                 } : {}, e.cover ? {
                     posterPath: e.cover,
                     coverUrl: e.cover
