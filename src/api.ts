@@ -44,7 +44,8 @@ export interface AudioSource {
 }
 
 function buildQuery(extra: Record<string, string | number> = {}): string {
-  const params = new URLSearchParams({
+  // Rex 跑在 iOS 的 JSC 里，没有 URLSearchParams，手写拼接
+  const params: Record<string, string | number> = {
     ...COMMON_PARAMS,
     device_id: DEVICE_ID,
     did: DEVICE_ID,
@@ -52,11 +53,17 @@ function buildQuery(extra: Record<string, string | number> = {}): string {
     vehicle_id: `qishui-${DEVICE_ID}`,
     _timestamp: String(Math.floor(Date.now() / 1000)),
     _nonce: String(Math.floor(Math.random() * 9000) + 1000),
-  });
-  for (const [key, value] of Object.entries(extra)) {
-    params.set(key, String(value));
+  };
+  for (const key in extra) {
+    if (Object.prototype.hasOwnProperty.call(extra, key)) params[key] = extra[key];
   }
-  return params.toString();
+  const parts: string[] = [];
+  for (const key in params) {
+    if (Object.prototype.hasOwnProperty.call(params, key)) {
+      parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(params[key]))}`);
+    }
+  }
+  return parts.join("&");
 }
 
 async function http<T = Json>(

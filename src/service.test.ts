@@ -1,5 +1,14 @@
 import { expect, test } from "@rstest/core";
-import { mergeLrc, parseLink } from "./service";
+import { mergeLrc, parseLink, toLrcDataUri } from "./service";
+
+test("toLrcDataUri 的 UTF-8 base64 与标准实现逐字节一致", () => {
+  // 覆盖：ASCII、3 字节中文、4 字节 emoji、非 3 倍数长度的 padding
+  const samples = ["", "A", "AB", "ABC", "[00:01.00]晴天", "[00:02.00]雨 🌧 停", "ラブ / 爱"];
+  for (const text of samples) {
+    const expected = `data:text/plain;charset=utf-8;base64,${Buffer.from(text, "utf8").toString("base64")}`;
+    expect(toLrcDataUri(text)).toBe(expected);
+  }
+});
 
 test("parseLink 识别三种详情链接并拒绝非法输入", () => {
   expect(parseLink("qishui:track:1234567890")).toEqual({ kind: "track", id: "1234567890", ownerId: "" });
