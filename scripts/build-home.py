@@ -20,6 +20,9 @@ OUT = ROOT / "home" / "qishui-home.rex"
 SCRIPT_URL = "https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@{sha}/dist/qishui.js"
 BUNDLE_ID = "qishui.music"
 
+# 行标题由宿主渲染，改不了缩进；卡片内容都缩进了 16pt，标题前面补个宽度固定的空格跟上
+SHIFT = "\u2002"  # en space，约半个字宽，不会像普通空格那样被折叠
+
 # (行 id, 标题, style, gridSize, functionId, htmlTemplate)
 # 一行一个样：大卡 → 两列列表 → 压字方卡 → 两列列表 → 榜单小卡 → 两列列表 → 压字方卡 → 圆头像
 ROWS = [
@@ -32,6 +35,10 @@ ROWS = [
     ("home-albums", "热门专辑", "fullWidthPoster", [-1, 1.8], "loadAlbums", "tile-rail.html"),
     ("home-artists", "热门歌手", "fullWidthPoster", [-1, 1.8], "loadArtists", "artist-circle.html"),
 ]
+
+
+# 这几个卡片自己留了 16pt 左右边距，行标题跟着右移
+INDENTED = {"hero-daily.html", "list-grid.html"}
 
 
 def script_url() -> str:
@@ -63,7 +70,12 @@ def card(row_id: str, style: str, grid: list, function_id: str, template: str | 
 
 def main() -> None:
     layout = [
-        {"id": row_id, "title": title, "isActive": True, "items": [card(row_id, style, grid, fn, tpl)]}
+        {
+            "id": row_id,
+            "title": (SHIFT + title) if tpl in INDENTED else title,
+            "isActive": True,
+            "items": [card(row_id, style, grid, fn, tpl)],
+        }
         for row_id, title, style, grid, fn, tpl in ROWS
     ]
     home = {
