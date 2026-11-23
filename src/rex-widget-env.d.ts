@@ -196,6 +196,22 @@ interface LoadLoginReturnType extends Array<VideoItem> {
 declare let loadLogin: (params: LoadLoginParams) => LoadLoginReturnType | Promise<LoadLoginReturnType>;
 //#endregion login
 
+//#region diag
+/** Params of 诊断 */
+interface LoadDiagParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 诊断 */
+interface LoadDiagReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 诊断
+ * @description 歌单读不到时用：把接口真实返回摊开
+ */
+declare let loadDiag: (params: LoadDiagParams) => LoadDiagReturnType | Promise<LoadDiagReturnType>;
+//#endregion diag
+
 //#region loadSubtitle
 /** Params of 歌词 */
 interface LoadSubtitleParams extends QishuiMusic.GlobalParams, BaseParams {

@@ -385,7 +385,19 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
     };
   }
   const picked: { playlist?: Json; entities: Json[] } = result;
-  const { playlist, entities } = picked;
+  const { playlist } = picked;
+  // 响应里可能混进歌单自己（推荐歌单、本歌单副本），留着会显示成「1 首」然后被宿主当单曲播
+  const entities = picked.entities.filter((entity) => String(entity.base_info?.id ?? "") !== id);
+  if (!entities.length) {
+    return {
+      id,
+      type: "url",
+      mediaType: "playlist",
+      link: playlistLink(id, ownerId),
+      title: "这个歌单里没有可播的曲目",
+      subtitle: "接口返回了歌单信息，但曲目列表是空的",
+    };
+  }
   const tracks = entities.map((entity) => toRexTrack(trackRef(entity)));
   const base = playlist?.base_info ?? {};
   const cover = formatCover(playlist?.display_info?.url_cover);

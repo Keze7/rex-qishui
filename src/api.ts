@@ -256,12 +256,19 @@ function rowEntity(row: Json): Json | null {
  * 有的歌单（导入的、合辑）不把曲目放 media_entities，而是塞在别的字段里。
  * 这里在整份响应里找第一组「看起来像曲目」的数组，兜住这种结构。
  */
-export function pickEntities(data: Json): Json[] {
+export function pickEntities(data: Json, excludeIds: string[] = []): Json[] {
   let found: Json[] = [];
   const walk = (node: any, depth: number) => {
     if (found.length || !node || depth > 2) return;
     if (Array.isArray(node)) {
-      const hits = node.map(rowEntity).filter((item): item is Json => Boolean(item));
+      // 排除歌单自身：响应里常带推荐歌单/本歌单副本，被当成曲目就会显示成「1 首」
+      const hits = node
+        .map(rowEntity)
+        .filter((item): item is Json => Boolean(item))
+        .filter((item) => {
+          const id = String(item.base_info?.id ?? "");
+          return !id || !excludeIds.includes(id);
+        });
       if (hits.length) {
         found = hits;
         return;
@@ -318,7 +325,7 @@ export async function playlistTracks(
       if (entities.length >= limit) break;
     }
     // 一行都没捞出来：可能整个字段换了位置（导入歌单常见），换着找一遍
-    if (!entities.length) for (const entity of pickEntities(data)) entities.push(entity);
+    if (!entities.length) for (const entity of pickEntities(data, [id])) entities.push(entity);
     const next = String(data.next_cursor ?? "");
     if (!data.has_more || !next || next === cursor || entities.length >= limit) break;
     cursor = next;

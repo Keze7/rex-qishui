@@ -537,7 +537,7 @@ export async function accountPlaylistTracks(id: string, ownerId = "", limit = 20
     }
     // 一行都没捞出来：换个字段再扒（导入的歌单常见），并把响应字段名带出来
     if (!entities.length) {
-      for (const entity of pickEntities(data)) entities.push(entity);
+      for (const entity of pickEntities(data, [id])) entities.push(entity);
       if (!entities.length) lastShape = `${Object.keys(data).join(",")}|rows=${rows.length}`;
     }
     const next = String(data.next_cursor ?? "");

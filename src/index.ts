@@ -1,4 +1,5 @@
 import { logout } from "./account";
+import { handleDiag } from "./diag";
 import {
   handleAlbumSection,
   handleArtists,
@@ -134,6 +135,14 @@ WidgetMetadata = {
       cacheDuration: 0,
     },
     {
+      id: "diag",
+      title: "诊断",
+      subtitle: "歌单读不到时用：把接口真实返回摊开",
+      type: "video",
+      functionName: "loadDiag",
+      cacheDuration: 0,
+    },
+    {
       id: "loadSubtitle",
       title: "歌词",
       subtitle: "汽水音乐时间轴歌词（原文 / 译文 / 双语）",
@@ -199,3 +208,5 @@ loadSubtitle = async (params) => handleSubtitle(params);
 search = async (params) => handleSearch(params);
 
 loadDetail = async (link) => handleDetail(link);
+
+loadDiag = async () => handleDiag(widgetVersion);
