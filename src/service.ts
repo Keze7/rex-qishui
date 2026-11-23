@@ -315,6 +315,18 @@ async function minePlaylistRow(id: string): Promise<{ ids: string[]; owners: str
 }
 
 async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoItem> {
+  // 列表页已判定读不到：直接给结论，省掉一轮必然失败的请求
+  if (unreadablePlaylists.has(id)) {
+    return {
+      id,
+      type: "url",
+      mediaType: "playlist",
+      link: playlistLink(id, ownerId),
+      title: "这张歌单车机接口读不到",
+      subtitle: "在汽水 App 里把这张歌单另存为新歌单，就能读能播",
+      description: "车机开放接口（type=2 导入歌单）不返回曲目，客户端侧没有可用的替代入口。",
+    };
+  }
   // 匿名接口对部分歌单会报「记录不存在」，账号票据又不被这个端点接受（28001003）。
   // 这里把几种走法依次试一遍，全挂就把各家错误摊在详情页上，方便定位。
   type Attempt = { playlist?: Json; entities: Json[]; shape?: string };
@@ -643,12 +655,35 @@ export async function handleLogin(): Promise<VideoItem[]> {
   return [toRexQr(ticket.qr, "用汽水音乐 App 扫码登录")];
 }
 
+/** 预检判定读不到的歌单：点击时直接给结论，不再白等一轮重试 */
+const unreadablePlaylists = new Set<string>();
+
+/** 车机接口读不到这张歌单：列表里就标出来，别让用户点进空白播放器再猜 */
+const BLOCKED_HINT = "车机读不到，需在汽水 App 里另存";
+
 export async function handleMyPlaylists(count = 50): Promise<VideoItem[]> {
   if (!getAccount()) return [loginPrompt()];
   try {
     const rows = await myPlaylists(count);
     if (!rows.length) return [noticeItem("还没有歌单", "账号里没有自建或收藏的歌单")];
-    return rows.map(toRexPlaylist);
+    return await Promise.all(
+      rows.map(async (row) => {
+        const card = toRexPlaylist(row);
+        const id = String(row.base_info?.id ?? "");
+        const owner = String(row.base_info?.owner_id ?? "");
+        if (!id) return card;
+        // 每张卡各试读 1 首：匿名读得到就正常显示，读不到就地标注
+        const readable = await playlistTracks(id, owner, 1)
+          .then((result) => result.entities.length > 0)
+          .catch(() => false);
+        if (readable) {
+          unreadablePlaylists.delete(id);
+          return card;
+        }
+        unreadablePlaylists.add(id);
+        return { ...card, subtitle: [card.subtitle, BLOCKED_HINT].filter(Boolean).join(" · ") };
+      }),
+    );
   } catch (error) {
     return [noticeItem("歌单读取失败", String((error as Error).message ?? error).slice(0, 90))];
   }

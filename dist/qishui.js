@@ -1595,7 +1595,8 @@ function tn() {
         ];
     })();
 }
-function tr(e, t, n, r, i, l, o) {
+let tr = new Set();
+function ti(e, t, n, r, i, l, o) {
     try {
         var a = e[l](o), u = a.value;
     } catch (e) {
@@ -1604,28 +1605,28 @@ function tr(e, t, n, r, i, l, o) {
     }
     a.done ? t(u) : Promise.resolve(u).then(r, i);
 }
-function ti(e) {
+function tl(e) {
     return function() {
         var t = this, n = arguments;
         return new Promise(function(r, i) {
             var l = e.apply(t, n);
             function o(e) {
-                tr(l, r, i, o, a, "next", e);
+                ti(l, r, i, o, a, "next", e);
             }
             function a(e) {
-                tr(l, r, i, o, a, "throw", e);
+                ti(l, r, i, o, a, "throw", e);
             }
             o(void 0);
         });
     };
 }
-let tl = "0.3.1";
+let to = "0.3.2";
 WidgetMetadata = {
     id: "qishui.music",
     title: "汽水音乐",
     description: "汽水音乐插件，基于车机开放接口：扫码登录后可用我的歌单与最近播放，另有每日推荐、新歌、猜你喜欢、专辑、歌单、场景、歌手、搜索、播放与时间轴歌词。免费曲目可完整播放，会员曲目只有试听片段",
     author: "self-hosted",
-    version: tl,
+    version: to,
     iconurl: "https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@main/assets/icon.png",
     requiredVersion: "0.0.7",
     contentType: "music",
@@ -1781,9 +1782,9 @@ WidgetMetadata = {
             }
         ]
     }
-}, loadLogin = ()=>ti(function*() {
+}, loadLogin = ()=>tl(function*() {
         return tn();
-    })(), loadMyPlaylists = ()=>ti(function*() {
+    })(), loadMyPlaylists = ()=>tl(function*() {
         return function(e = 50) {
             return eN(function*() {
                 if (!ep()) return [
@@ -1794,7 +1795,16 @@ WidgetMetadata = {
                     if (!t.length) return [
                         e9("还没有歌单", "账号里没有自建或收藏的歌单")
                     ];
-                    return t.map(eK);
+                    return yield Promise.all(t.map((e)=>eN(function*() {
+                            var t, n, r, i;
+                            let l = eK(e), o = String(null != (t = null == (r = e.base_info) ? void 0 : r.id) ? t : ""), a = String(null != (n = null == (i = e.base_info) ? void 0 : i.owner_id) ? n : "");
+                            return o ? (yield $(o, a, 1).then((e)=>e.entities.length > 0).catch(()=>!1)) ? (tr.delete(o), l) : (tr.add(o), eI(eE({}, l), {
+                                subtitle: [
+                                    l.subtitle,
+                                    "车机读不到，需在汽水 App 里另存"
+                                ].filter(Boolean).join(" · ")
+                            })) : l;
+                        })()));
                 } catch (e) {
                     var t;
                     return [
@@ -1803,7 +1813,7 @@ WidgetMetadata = {
                 }
             })();
         }();
-    })(), loadRecentPlayed = ()=>ti(function*() {
+    })(), loadRecentPlayed = ()=>tl(function*() {
         return function(e = 50) {
             return eN(function*() {
                 if (!ep()) return [
@@ -1847,12 +1857,12 @@ WidgetMetadata = {
                 }
             })();
         }();
-    })(), logoutAccount = ()=>ti(function*() {
+    })(), logoutAccount = ()=>tl(function*() {
         return es(en), es(er), {
             message: "已退出登录",
             refresh: !0
         };
-    })(), loadScenes = ()=>ti(function*() {
+    })(), loadScenes = ()=>tl(function*() {
         return eN(function*() {
             return (yield t(function*() {
                 let e = yield s("/feed/mode/", {});
@@ -1884,23 +1894,23 @@ WidgetMetadata = {
                     coverUrl: e.cover
                 } : {})));
         })();
-    })(), loadRecommend = ()=>ti(function*() {
+    })(), loadRecommend = ()=>tl(function*() {
         return eN(function*() {
             return (yield O(null, 30)).map((e)=>eR(A(e)));
         })();
-    })(), loadDaily = ()=>ti(function*() {
+    })(), loadDaily = ()=>tl(function*() {
         return eY("daily", 30);
-    })(), loadFresh = ()=>ti(function*() {
+    })(), loadFresh = ()=>tl(function*() {
         return eY("fresh", 30);
-    })(), loadFamiliar = ()=>ti(function*() {
+    })(), loadFamiliar = ()=>tl(function*() {
         return eY("familiar", 30);
-    })(), loadAlbums = ()=>ti(function*() {
+    })(), loadAlbums = ()=>tl(function*() {
         return function(e = 10) {
             return eN(function*() {
                 return eJ((yield O(null, 30, "daily")), e);
             })();
         }(10);
-    })(), loadArtists = (e)=>ti(function*() {
+    })(), loadArtists = (e)=>tl(function*() {
         return function() {
             return eN(function*(e = {}) {
                 var t, n;
@@ -1923,11 +1933,11 @@ WidgetMetadata = {
                 }();
             }).apply(this, arguments);
         }(e);
-    })(), loadHotPlaylists = ()=>ti(function*() {
+    })(), loadHotPlaylists = ()=>tl(function*() {
         return eH("热歌", 10);
-    })(), loadClassicPlaylists = ()=>ti(function*() {
+    })(), loadClassicPlaylists = ()=>tl(function*() {
         return eH("经典老歌", 10);
-    })(), loadSubtitle = (e)=>ti(function*() {
+    })(), loadSubtitle = (e)=>tl(function*() {
         return eN(function*() {
             var t, n, r, i, l;
             let o, a = e.link ? eB(e.link) : null, u = (null == a ? void 0 : a.kind) === "track" ? a.id : /^\d{1,30}$/.test(String(null != (t = e.id) ? t : "")) ? String(e.id) : "";
@@ -1967,7 +1977,7 @@ WidgetMetadata = {
                 url: e8(p)
             }), d;
         })();
-    })(), search = (e)=>ti(function*() {
+    })(), search = (e)=>tl(function*() {
         return eN(function*() {
             var t, n;
             let r = String(null != (t = e.keyword) ? t : "").trim();
@@ -1989,7 +1999,7 @@ WidgetMetadata = {
                 ...a.map(eK)
             ];
         })();
-    })(), loadDetail = (e)=>ti(function*() {
+    })(), loadDetail = (e)=>tl(function*() {
         return eN(function*() {
             var t, n, r, i, l;
             let o = eB(e);
@@ -2048,6 +2058,15 @@ WidgetMetadata = {
                 });
             })()) : "login" === o.kind ? (yield tn())[0] : (i = o.id, l = o.ownerId, eN(function*() {
                 var e, t, n, r, o, a, c, f;
+                if (tr.has(i)) return {
+                    id: i,
+                    type: "url",
+                    mediaType: "playlist",
+                    link: ez(i, l),
+                    title: "这张歌单车机接口读不到",
+                    subtitle: "在汽水 App 里把这张歌单另存为新歌单，就能读能播",
+                    description: "车机开放接口（type=2 导入歌单）不返回曲目，客户端侧没有可用的替代入口。"
+                };
                 let d = [
                     [
                         "匿名",
@@ -2173,11 +2192,11 @@ WidgetMetadata = {
                 });
             })());
         })();
-    })(), loadDiag = ()=>ti(function*() {
+    })(), loadDiag = ()=>tl(function*() {
         return ej(function*() {
             var e, t, n, r, i, l, o, a, u, c, f, d, s;
             let p = [], y = ep();
-            p.push(eA("插件版本", tl)), p.push(y ? eA("登录状态", `已登录 uid=${y.userId} ${y.nickname || ""}`) : eA("登录状态", "未登录（账号接口全部用不了）"));
+            p.push(eA("插件版本", to)), p.push(y ? eA("登录状态", `已登录 uid=${y.userId} ${y.nickname || ""}`) : eA("登录状态", "未登录（账号接口全部用不了）"));
             let m = [];
             try {
                 m = yield eS(50), p.push(eA("歌单列表", `拿到 ${m.length} 个`));
