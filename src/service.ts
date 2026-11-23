@@ -68,12 +68,15 @@ function formatDuration(ms: number): string {
 function toRexTrack(ref: TrackRef): VideoItem {
   const subtitle = [ref.artists.join(" / "), ref.album, formatDuration(ref.durationMs)].filter(Boolean).join(" · ");
   const seconds = Math.round(ref.durationMs / 1000);
+  const artists = ref.artists.join(" / ");
   return {
     id: ref.id,
     type: "url",
     mediaType: "song",
     link: trackLink(ref.id),
     title: ref.name,
+    // 首页 HTML 卡片只认 description，不认 subtitle；这里放歌手，卡片副标题才有内容
+    ...(artists ? { description: artists } : {}),
     ...(subtitle ? { subtitle } : {}),
     ...(seconds > 0 ? { duration: seconds, durationText: formatDuration(ref.durationMs) } : {}),
     ...(ref.cover ? { posterPath: ref.cover, coverUrl: ref.cover } : {}),

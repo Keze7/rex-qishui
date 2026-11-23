@@ -1140,14 +1140,16 @@ function eR(e) {
         e.artists.join(" / "),
         e.album,
         eU(e.durationMs)
-    ].filter(Boolean).join(" · "), n = Math.round(e.durationMs / 1000);
+    ].filter(Boolean).join(" · "), n = Math.round(e.durationMs / 1000), r = e.artists.join(" / ");
     return eE({
         id: e.id,
         type: "url",
         mediaType: "song",
         link: eM(e.id),
         title: e.name
-    }, t ? {
+    }, r ? {
+        description: r
+    } : {}, t ? {
         subtitle: t
     } : {}, n > 0 ? {
         duration: n,
@@ -1620,7 +1622,7 @@ function tl(e) {
         });
     };
 }
-let to = "0.3.5";
+let to = "0.4.0";
 WidgetMetadata = {
     id: "qishui.music",
     title: "汽水音乐",

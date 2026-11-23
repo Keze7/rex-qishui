@@ -3,6 +3,10 @@
 
 用法：python scripts/build-home.py [脚本地址]
 默认用当前 git HEAD 固定 jsDelivr 地址，避免 @main 的 12 小时缓存。
+
+卡片是自写的 HTML（rex-html/ 里），数据来自插件模块的全局函数：
+widgetURL 指 dist/qishui.js，widgetBundleId 必须是 WidgetMetadata.id（qishui.music），
+functionId 是插件里导出的函数名（loadDaily 一类）。
 """
 import json
 import subprocess
@@ -14,17 +18,18 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "home" / "qishui-home.rex"
 
 SCRIPT_URL = "https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@{sha}/dist/qishui.js"
+BUNDLE_ID = "qishui.music"
 
 # (行 id, 标题, style, gridSize, functionId, htmlTemplate)
 ROWS = [
-    ("home-daily", "每日推荐", "banner", [-1, 3], "loadDaily", None),
-    ("home-recent", "最近播放", "fullWidthPoster", [-1, 2.3], "loadRecentPlayed", "app-poster-full.html"),
-    ("home-fresh", "新歌速递", "fullWidthPoster", [-1, 2.3], "loadFresh", "app-poster-full.html"),
-    ("home-familiar", "猜你喜欢", "fullWidthPoster", [-1, 2.3], "loadFamiliar", "app-poster-full.html"),
-    ("home-scenes", "场景电台", "fullWidthPoster", [-1, 2.3], "loadScenes", "app-poster-full.html"),
-    ("home-hot", "热歌歌单", "fullWidthPoster", [-1, 2.3], "loadHotPlaylists", "app-poster-full.html"),
-    ("home-artists", "热门歌手", "personRail", [-1, 1.609375], "loadArtists", None),
-    ("home-albums", "热门专辑", "fullWidthPoster", [-1, 2.3], "loadAlbums", "app-poster-full.html"),
+    ("home-daily", "每日推荐", "cover", [-1, 2.3], "loadDaily", "hero-daily.html"),
+    ("home-recent", "最近播放", "fullWidthPoster", [-1, 3.4], "loadRecentPlayed", "track-rail.html"),
+    ("home-fresh", "新歌速递", "fullWidthPoster", [-1, 3.4], "loadFresh", "track-rail.html"),
+    ("home-familiar", "猜你喜欢", "fullWidthPoster", [-1, 3.4], "loadFamiliar", "track-rail.html"),
+    ("home-scenes", "场景电台", "fullWidthPoster", [-1, 3.4], "loadScenes", "track-rail.html"),
+    ("home-hot", "热歌歌单", "fullWidthPoster", [-1, 3.4], "loadHotPlaylists", "track-rail.html"),
+    ("home-albums", "热门专辑", "fullWidthPoster", [-1, 3.4], "loadAlbums", "track-rail.html"),
+    ("home-artists", "热门歌手", "fullWidthPoster", [-1, 3.4], "loadArtists", "artist-rail.html"),
 ]
 
 
@@ -46,7 +51,7 @@ def card(row_id: str, style: str, grid: list, function_id: str, template: str | 
         "subtitle": "",
         "name": "",
         "count": 0,
-        "widgetBundleId": "",
+        "widgetBundleId": BUNDLE_ID,
         "widgetURL": script_url(),
         "iconUrl": "",
     }
@@ -63,7 +68,7 @@ def main() -> None:
     home = {
         "title": "汽水音乐",
         "avatar": "avatar-22",
-        "description": "汽水音乐 · 最近播放 / 每日推荐 / 歌单 / 歌手 / 专辑",
+        "description": "汽水音乐 · 每日推荐 / 最近播放 / 新歌 / 歌单 / 专辑 / 歌手",
         "isIndependent": False,
     }
     manifest = {"format": "video.fika.rex.home-package", "version": 2}
