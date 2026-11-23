@@ -246,6 +246,35 @@ export function albumLinksOf(entities: Json[]): Array<{ id: string; name: string
   return out;
 }
 
+/** 歌单行是 { media_id, media_type, track_entity }，不是通用的 entity 包装 */
+function rowEntity(row: Json): Json | null {
+  const entity = row.track_entity ?? row.entity?.track ?? row.entity?.media?.track_entity ?? (row.base_info ? row : null);
+  return entity?.base_info?.id ? entity : null;
+}
+
+/**
+ * 有的歌单（导入的、合辑）不把曲目放 media_entities，而是塞在别的字段里。
+ * 这里在整份响应里找第一组「看起来像曲目」的数组，兜住这种结构。
+ */
+export function pickEntities(data: Json): Json[] {
+  let found: Json[] = [];
+  const walk = (node: any, depth: number) => {
+    if (found.length || !node || depth > 2) return;
+    if (Array.isArray(node)) {
+      const hits = node.map(rowEntity).filter((item): item is Json => Boolean(item));
+      if (hits.length) {
+        found = hits;
+        return;
+      }
+      for (const item of node) walk(item, depth + 1);
+      return;
+    }
+    if (typeof node === "object") for (const key in node) walk(node[key], depth + 1);
+  };
+  walk(data, 0);
+  return found;
+}
+
 /** 歌单分页：每页给 40~48 首，游标每次 +50，大歌单要循环拉 */
 export async function playlistTracks(
   id: string,
@@ -266,12 +295,12 @@ export async function playlistTracks(
     playlist = playlist ?? data.playlist;
     const rows: Json[] = Array.isArray(data.media_entities) ? data.media_entities : [];
     for (const row of rows) {
-      // 歌单行是 { media_id, media_type, track_entity }，不是通用的 entity 包装
-      const entity =
-        row.track_entity ?? row.entity?.track ?? row.entity?.media?.track_entity ?? (row.base_info ? row : null);
-      if (entity?.base_info?.id) entities.push(entity);
+      const entity = rowEntity(row);
+      if (entity) entities.push(entity);
       if (entities.length >= limit) break;
     }
+    // 第一页就没有 media_entities：换字段再扒一次
+    if (!rows.length) for (const entity of pickEntities(data)) entities.push(entity);
     const next = String(data.next_cursor ?? "");
     if (!data.has_more || !next || next === cursor || entities.length >= limit) break;
     cursor = next;

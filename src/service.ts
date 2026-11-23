@@ -283,8 +283,8 @@ const uniqueStr = (list: string[]) => list.filter((value, index) => list.indexOf
  * 匿名读不到时，从账号里的歌单行挖其他 id / 作者再试一轮：
  * 收藏来的歌单，行里的 id 可能只是「收藏记录 id」，真正的 playlist id 或原作者在别的字段里。
  */
-async function minePlaylistRow(id: string): Promise<{ ids: string[]; owners: string[]; keys: string[]; dump: string }> {
-  const empty = { ids: [] as string[], owners: [] as string[], keys: [] as string[], dump: "" };
+async function minePlaylistRow(id: string): Promise<{ ids: string[]; owners: string[]; keys: string[]; dump: string; title: string; count: number }> {
+  const empty = { ids: [] as string[], owners: [] as string[], keys: [] as string[], dump: "", title: "", count: 0 };
   if (!getAccount()) return empty;
   const rows = await myPlaylists(50).catch(() => [] as Json[]);
   const row = rows.find((item) => String(item.base_info?.id ?? "") === id);
@@ -309,13 +309,16 @@ async function minePlaylistRow(id: string): Promise<{ ids: string[]; owners: str
     owners: uniqueStr(owners.filter((value) => value !== id)).slice(0, 3),
     keys: Object.keys(row.base_info ?? {}),
     dump: JSON.stringify(row.base_info ?? row).slice(0, 420),
+    title: String(row.base_info?.title ?? row.base_info?.name ?? ""),
+    count: Number(row.resource_cnt?.track_cnt ?? row.resource_cnt ?? 0) || 0,
   };
 }
 
 async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoItem> {
   // 匿名接口对部分歌单会报「记录不存在」，账号票据又不被这个端点接受（28001003）。
   // 这里把几种走法依次试一遍，全挂就把各家错误摊在详情页上，方便定位。
-  const tries: Array<[string, () => Promise<{ playlist?: Json; entities: Json[] }>]> = [["匿名", () => playlistTracks(id, ownerId)]];
+  type Attempt = { playlist?: Json; entities: Json[]; shape?: string };
+  const tries: Array<[string, () => Promise<Attempt>]> = [["匿名", () => playlistTracks(id, ownerId)]];
   if (ownerId) tries.push(["匿名·无作者", () => playlistTracks(id, "")]);
   const account = getAccount();
   if (account) {
@@ -326,8 +329,8 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
   }
 
   const errors: string[] = [];
-  let result: { playlist?: Json; entities: Json[] } | null = null;
-  const run = async (label: string, task: () => Promise<{ playlist?: Json; entities: Json[] }>) => {
+  let result: Attempt | null = null;
+  const run = async (label: string, task: () => Promise<Attempt>) => {
     try {
       const attempt = await task();
       // 只有拿到曲目才算成功：部分歌单会返回元数据但 0 首（导入进来的歌单），
@@ -336,7 +339,8 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
         result = attempt;
         return true;
       }
-      errors.push(`${label}:${attempt.playlist ? "0 首" : "空结果"}`);
+      const shape = attempt.shape ? `(${attempt.shape})` : "";
+      errors.push(`${label}:${attempt.playlist ? `0 首${shape}` : "空结果"}`);
     } catch (error) {
       errors.push(`${label}:${String((error as Error)?.message ?? error)}`);
     }
@@ -346,11 +350,13 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
 
   let rowKeys: string[] = [];
   let rowDump = "";
+  let rowTitle = "";
   if (!result) {
     // 换 id / 换作者再试：只在前面的走法全挂后才跑，正常歌单不受影响
     const mined = await minePlaylistRow(id);
     rowKeys = mined.keys;
     rowDump = mined.dump;
+    rowTitle = mined.title;
     let budget = 6;
     for (const candidateId of [id, ...mined.ids]) {
       for (const candidateOwner of uniqueStr([ownerId, ...mined.owners])) {
@@ -362,8 +368,27 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
     }
   }
   if (!result) {
+    // 别返回纯文字条目：宿主对没有曲目的歌单页只会卡在「重试」，这里塞一行说明当作曲目。
     const fields = rowKeys.length ? ` · 字段:${rowKeys.join(",")}` : " · 没取到歌单行";
-    return noticeItem("这个歌单打不开", `id ${id}`, `接口反馈：${errors.join(" / ").slice(0, 180)}${fields}${rowDump ? ` · 行数据:${rowDump}` : ""}`);
+    return {
+      id,
+      type: "url",
+      mediaType: "playlist",
+      link: playlistLink(id, ownerId),
+      title: rowTitle || "这个歌单读不到",
+      subtitle: "车机接口不给曲目",
+      description: `接口反馈：${errors.join(" / ").slice(0, 180)}${fields}${rowDump ? ` · 行数据:${rowDump}` : ""}`,
+      tracks: [
+        {
+          id: "playlist-blocked",
+          type: "url",
+          mediaType: "song",
+          link: LOGIN_LINK,
+          title: "这个歌单读不到曲目",
+          subtitle: "导入或私密的歌单只有汽水 App 内能读，点这里看登录状态",
+        },
+      ],
+    };
   }
   const picked: { playlist?: Json; entities: Json[] } = result;
   const { playlist, entities } = picked;
