@@ -450,15 +450,6 @@ export function trackRef(entity: Json): TrackRef {
   };
 }
 
-/** 曲目里的歌手（id 用来拉该歌手热门曲，name 用来展示） */
-export function artistLinksOf(entity: Json): { id: string; name: string }[] {
-  const links = entity?.related_info?.artist_links;
-  if (!Array.isArray(links)) return [];
-  return links
-    .map((item: Json) => ({ id: String(item.id ?? ""), name: String(item.name ?? "") }))
-    .filter((item) => item.id);
-}
-
 export function lyricOf(entity: Json): { original: string; translation?: string } {
   const info = entity.display_info?.lyric_info;
   const original = String(info?.lyric_entity?.content ?? "");

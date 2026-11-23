@@ -1,7 +1,7 @@
 // 诊断模块：只做一件事——把「账号歌单详情为什么读不到曲目」的真实返回值摊开。
 // 宿主对没有可播曲目的条目只会丢进播放器，描述文字不渲染，所以诊断必须在列表层出结果。
-import { accountPlatform, getAccount, myPlaylists } from "./account";
-import { type Json, feedTracks, playlistTracks } from "./api";
+import { getAccount, myPlaylists } from "./account";
+import { type Json, playlistTracks } from "./api";
 
 const LINK = "qishui:login";
 const CHUNK = 52;
@@ -35,34 +35,6 @@ async function probeAnonymous(id: string, owner: string): Promise<string> {
   }
 }
 
-/** 用账号票据请求推荐接口：认了就能拿到「官方按你账号」的推荐 */
-async function probeAccountFeed(): Promise<string> {
-  try {
-    const data = await accountPlatform<Json>("/feed/song-tab/", {
-      played_media: [],
-      is_first_request: true,
-      with_client_cache: false,
-      is_did_first_request: false,
-      count: 10,
-      feed_preference: {
-        scene_mode_id: null,
-        scene_mode_select_time: null,
-        preference_mode: "daily",
-        total_request_count: 1,
-        preference_mode_request_count: 1,
-        current_mode_request_count: 1,
-      },
-    });
-    const items: Json[] = Array.isArray(data.items) ? data.items : [];
-    const names = items
-      .map((row) => (row.entity?.track ?? row.entity?.media?.track_entity)?.base_info?.name)
-      .filter(Boolean);
-    return `票据 ok 曲${items.length}${names.length ? "：" + names.slice(0, 5).join("/") : ""}`;
-  } catch (error) {
-    return `票据 ✗${reason(error)}`;
-  }
-}
-
 export async function handleDiag(version: string): Promise<VideoItem[]> {
   const out: VideoItem[] = [];
   const account = getAccount();
@@ -72,18 +44,6 @@ export async function handleDiag(version: string): Promise<VideoItem[]> {
       ? item("登录状态", `已登录 uid=${account.userId} ${account.nickname || ""}`)
       : item("登录状态", "未登录（账号接口全部用不了）"),
   );
-
-  // 推荐接口：先看匿名（设备维度）出什么歌，再看账号票据认不认
-  if (account) {
-    try {
-      const anon = await feedTracks(null, 5, "daily");
-      const names = anon.map((row) => row?.base_info?.name).filter(Boolean);
-      out.push(item("推荐·匿名", names.length ? names.slice(0, 5).join("/") : "0 首"));
-    } catch (error) {
-      out.push(item("推荐·匿名", `✗${reason(error)}`));
-    }
-    out.push(item("推荐·账号票据", await probeAccountFeed()));
-  }
 
   let rows: Json[] = [];
   try {
