@@ -1,6 +1,6 @@
 // 车机账号接口：扫码登录 → access_code → bd-ticket-guard 票据 → /me/*。
 // 每个请求都要用扫码时生成的 P-256 私钥签名，签名实现在 sign.ts。
-import { pickEntities } from "./api";
+import { mgetEntities, pickEntities } from "./api";
 import { base64Encode, buildCsr, ecdsaSign, randomScalar, utf8Bytes } from "./sign";
 
 const PREFIX = "/api/luna/v1/platform";
@@ -515,6 +515,7 @@ export async function myPlaylists(count = 50): Promise<any[]> {
 /** 收藏来的歌单（type 2）匿名读不到，只能用账号票据读 */
 export async function accountPlaylistTracks(id: string, ownerId = "", limit = 200): Promise<{ playlist?: any; entities: any[]; shape?: string }> {
   const entities: any[] = [];
+  const pending: string[] = [];
   let playlist: any;
   let lastShape = "";
   let cursor = "0";
@@ -531,16 +532,21 @@ export async function accountPlaylistTracks(id: string, ownerId = "", limit = 20
     for (const row of rows) {
       const entity = row.track_entity ?? row.entity?.track ?? row.entity?.media?.track_entity ?? (row.base_info ? row : null);
       if (entity?.base_info?.id) entities.push(entity);
+      else if (row.media_id) pending.push(String(row.media_id));
       if (entities.length >= limit) break;
     }
-    // 第一页就没有 media_entities：换个字段再扒（导入的歌单常见），并把响应字段名带出来
-    if (!rows.length) {
+    // 一行都没捞出来：换个字段再扒（导入的歌单常见），并把响应字段名带出来
+    if (!entities.length) {
       for (const entity of pickEntities(data)) entities.push(entity);
-      if (!entities.length) lastShape = Object.keys(data).join(",");
+      if (!entities.length) lastShape = `${Object.keys(data).join(",")}|rows=${rows.length}`;
     }
     const next = String(data.next_cursor ?? "");
     if (!data.has_more || !next || next === cursor) break;
     cursor = next;
+  }
+  if (!entities.length && pending.length) {
+    lastShape = `${lastShape}|ids=${pending.length}`;
+    for (const entity of await mgetEntities(pending).catch(() => [])) entities.push(entity);
   }
   return { playlist, entities, ...(lastShape ? { shape: lastShape } : {}) };
 }

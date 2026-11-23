@@ -275,6 +275,21 @@ export function pickEntities(data: Json): Json[] {
   return found;
 }
 
+/** 批量取曲目实体：歌单行里只有 media_id、没有 track_entity 时用它补齐 */
+export async function mgetEntities(ids: string[]): Promise<Json[]> {
+  const out: Json[] = [];
+  for (let start = 0; start < ids.length; start += 50) {
+    const chunk = ids.slice(start, start + 50);
+    const data = await platform<Json>("/media/mget/", {
+      media_list: chunk.map((id) => ({ id, type: "track" })),
+      card_context: {},
+    });
+    const rows: Json[] = Array.isArray(data.media_list) ? data.media_list : [];
+    for (const row of rows) if (row.track_entity?.base_info?.id) out.push(row.track_entity);
+  }
+  return out;
+}
+
 /** 歌单分页：每页给 40~48 首，游标每次 +50，大歌单要循环拉 */
 export async function playlistTracks(
   id: string,
@@ -282,6 +297,7 @@ export async function playlistTracks(
   limit = 200,
 ): Promise<{ playlist?: Json; entities: Json[] }> {
   const entities: Json[] = [];
+  const pending: string[] = [];
   let playlist: Json | undefined;
   let cursor = "0";
   for (let page = 0; page < 8; page++) {
@@ -297,13 +313,18 @@ export async function playlistTracks(
     for (const row of rows) {
       const entity = rowEntity(row);
       if (entity) entities.push(entity);
+      // 行里只有 media_id（导入歌单常见），记下来走 /media/mget/ 批量补
+      else if (row.media_id) pending.push(String(row.media_id));
       if (entities.length >= limit) break;
     }
-    // 第一页就没有 media_entities：换字段再扒一次
-    if (!rows.length) for (const entity of pickEntities(data)) entities.push(entity);
+    // 一行都没捞出来：可能整个字段换了位置（导入歌单常见），换着找一遍
+    if (!entities.length) for (const entity of pickEntities(data)) entities.push(entity);
     const next = String(data.next_cursor ?? "");
     if (!data.has_more || !next || next === cursor || entities.length >= limit) break;
     cursor = next;
+  }
+  if (!entities.length && pending.length) {
+    for (const entity of await mgetEntities(pending).catch(() => [] as Json[])) entities.push(entity);
   }
   return { playlist, entities };
 }

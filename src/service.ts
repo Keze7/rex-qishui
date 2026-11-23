@@ -368,26 +368,20 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
     }
   }
   if (!result) {
-    // 别返回纯文字条目：宿主对没有曲目的歌单页只会卡在「重试」，这里塞一行说明当作曲目。
-    const fields = rowKeys.length ? ` · 字段:${rowKeys.join(",")}` : " · 没取到歌单行";
+    // 宿主对没有可播曲目的歌单只会把它当单曲丢进播放器，描述文字看不到，
+    // 所以把诊断写进标题/副标题——这两处播放器一定会显示。
+    const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0, max)}…` : text);
+    const accountMsg = errors.filter((item) => item.startsWith("账号票据")).join(" | ") || "没登录";
+    const anonMsg = errors.filter((item) => item.startsWith("匿名")).join(" | ");
+    const rowMsg = rowKeys.length ? `${rowKeys.join(",")}${rowDump ? ` ${rowDump}` : ""}` : "没取到歌单行";
     return {
       id,
       type: "url",
       mediaType: "playlist",
       link: playlistLink(id, ownerId),
-      title: rowTitle || "这个歌单读不到",
-      subtitle: "车机接口不给曲目",
-      description: `接口反馈：${errors.join(" / ").slice(0, 180)}${fields}${rowDump ? ` · 行数据:${rowDump}` : ""}`,
-      tracks: [
-        {
-          id: "playlist-blocked",
-          type: "url",
-          mediaType: "song",
-          link: LOGIN_LINK,
-          title: "这个歌单读不到曲目",
-          subtitle: "导入或私密的歌单只有汽水 App 内能读，点这里看登录状态",
-        },
-      ],
+      title: clip(`读不到 · ${accountMsg}`, 60),
+      subtitle: clip(rowMsg, 80),
+      description: `接口反馈：${errors.join(" / ").slice(0, 260)} · 匿名：${anonMsg}`,
     };
   }
   const picked: { playlist?: Json; entities: Json[] } = result;
