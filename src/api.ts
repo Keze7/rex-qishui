@@ -130,7 +130,7 @@ async function platform<T = Json>(path: string, body: Json = {}): Promise<T> {
 }
 
 /** 搜索结果为分组结构，只取目标分组内的实体 */
-async function searchEntities(type: "track" | "playlist", keyword: string, limit: number): Promise<any[]> {
+async function searchEntities(type: "track" | "playlist" | "artist", keyword: string, limit: number): Promise<any[]> {
   const searchId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const data = await platform<Json>("/search/", {
     q: keyword,
@@ -159,6 +159,43 @@ export async function searchTracks(keyword: string, limit = 30): Promise<Json[]>
 
 export async function searchPlaylists(keyword: string, limit = 20): Promise<Json[]> {
   return searchEntities("playlist", keyword, limit);
+}
+
+/** 车机搜索支持歌手，但 album 分组恒为空（没有专辑端点） */
+export async function searchArtists(keyword: string, limit = 20): Promise<Json[]> {
+  return searchEntities("artist", keyword, limit);
+}
+
+export interface ArtistRef {
+  id: string;
+  name: string;
+  avatar?: string;
+  trackCount: number;
+  albumCount: number;
+  intro?: string;
+}
+
+export function artistRef(entity: Json): ArtistRef {
+  const base = entity?.base_info ?? entity ?? {};
+  return {
+    id: String(base.id ?? ""),
+    name: String(base.full_display_name ?? base.simple_display_name ?? base.name ?? "未知歌手"),
+    avatar: formatCover(base.url_avatar),
+    trackCount: Number(base.count_tracks ?? 0),
+    albumCount: Number(base.count_albums ?? 0),
+    intro: base.intro ? String(base.intro) : undefined,
+  };
+}
+
+export async function artistInfo(id: string): Promise<ArtistRef> {
+  const data = await platform<Json>("/artist/detail/", { artist_id: id });
+  return artistRef(data.artist_info ?? {});
+}
+
+/** 车机只下发歌手热门歌曲，最多 50 首，没有分页 */
+export async function artistTracks(id: string, count = 50): Promise<Json[]> {
+  const data = await platform<Json>("/artist/tracks/", { artist_id: id, count, cursor: "0" });
+  return Array.isArray(data.tracks) ? data.tracks : [];
 }
 
 export async function playlistTracks(id: string, ownerId = "", count = 100): Promise<{ playlist?: Json; entities: Json[] }> {

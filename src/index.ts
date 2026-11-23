@@ -1,4 +1,5 @@
 import {
+  handleArtists,
   handleDetail,
   handlePlaylistSection,
   handleRecommend,
@@ -62,6 +63,14 @@ WidgetMetadata = {
       cacheDuration: 3600,
     },
     {
+      id: "artists",
+      title: "热门歌手",
+      subtitle: "歌手主页与热门单曲",
+      type: "person",
+      functionName: "loadArtists",
+      cacheDuration: 86400,
+    },
+    {
       id: "loadSubtitle",
       title: "歌词",
       subtitle: "汽水音乐时间轴歌词（原文 / 译文 / 双语）",
@@ -73,16 +82,18 @@ WidgetMetadata = {
   search: {
     id: "search",
     title: "搜索",
-    subtitle: "搜索汽水音乐的歌曲与歌单",
+    subtitle: "搜索汽水音乐的歌手、歌曲与歌单",
     functionName: "search",
     params: [
       {
         name: "kind",
         title: "结果类型",
         type: "enumeration",
-        value: "songs",
+        value: "all",
         enumOptions: [
+          { title: "全部（歌手 / 歌曲 / 歌单）", value: "all" },
           { title: "歌曲", value: "songs" },
+          { title: "歌手", value: "artists" },
           { title: "歌单", value: "playlists" },
         ],
       },
@@ -93,6 +104,8 @@ WidgetMetadata = {
 loadScenes = async () => handleScenes();
 
 loadRecommend = async () => handleRecommend();
+
+loadArtists = async (params) => handleArtists(params);
 
 loadHotPlaylists = async () => handlePlaylistSection("热歌", 10);
 

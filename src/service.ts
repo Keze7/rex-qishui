@@ -1,11 +1,16 @@
 import {
+  type ArtistRef,
   type TrackRef,
+  artistInfo,
+  artistRef,
+  artistTracks,
   feedModes,
   feedTracks,
   formatCover,
   lyricOf,
   playlistTracks,
   resolveAudio,
+  searchArtists,
   searchPlaylists,
   searchTracks,
   trackEntity,
@@ -26,12 +31,18 @@ export function sceneLink(id: string): string {
   return `${LINK_PREFIX}scene:${id}`;
 }
 
-export function parseLink(link: string): { kind: "track" | "playlist" | "scene"; id: string; ownerId: string } | null {
+export function artistLink(id: string): string {
+  return `${LINK_PREFIX}artist:${id}`;
+}
+
+export function parseLink(
+  link: string,
+): { kind: "track" | "playlist" | "scene" | "artist"; id: string; ownerId: string } | null {
   const raw = String(link ?? "").trim();
   if (!raw.startsWith(LINK_PREFIX)) return null;
   const [kind, id, ownerId = ""] = raw.slice(LINK_PREFIX.length).split(":");
   if (!id || !/^\d{1,30}$/.test(id)) return null;
-  if (kind === "track" || kind === "scene") return { kind, id, ownerId: "" };
+  if (kind === "track" || kind === "scene" || kind === "artist") return { kind, id, ownerId: "" };
   if (kind === "playlist") return { kind, id, ownerId };
   return null;
 }
@@ -58,6 +69,21 @@ function toRexTrack(ref: TrackRef): VideoItem {
 // 场景详情只有 id，展示名在列表页时记下，避免标题变成“场景推荐”
 const sceneNames = new Map<string, string>();
 
+function toRexArtist(ref: ArtistRef): VideoItem {
+  const subtitle = [ref.trackCount ? `${ref.trackCount} 首` : "", ref.albumCount ? `${ref.albumCount} 张专辑` : ""]
+    .filter(Boolean)
+    .join(" · ");
+  return {
+    id: ref.id,
+    type: "person",
+    mediaType: "person",
+    link: artistLink(ref.id),
+    title: ref.name,
+    ...(subtitle ? { subtitle } : {}),
+    ...(ref.avatar ? { avatar: ref.avatar, posterPath: ref.avatar, coverUrl: ref.avatar } : {}),
+    ...(ref.intro ? { description: ref.intro.slice(0, 120) } : {}),
+  };
+}
 export async function handleScenes(): Promise<VideoItem[]> {
   const modes = await feedModes();
   return modes.map((mode) => {
@@ -111,12 +137,80 @@ export async function handlePlaylistSection(keyword: string, count = 10): Promis
   });
 }
 
+const ARTIST_NOISE = /歌手|歌曲|热门|榜单|合集|未知|^\s*$/;
+
+/** 车机没有歌手列表接口，用几个大盘词拼出“热门歌手” */
+export async function handleHotArtists(count = 18): Promise<VideoItem[]> {
+  const groups = await Promise.all(
+    ["华语", "粤语", "欧美"].map((keyword) => searchArtists(keyword, 10).catch(() => [] as any[])),
+  );
+  const seen = new Set<string>();
+  const out: VideoItem[] = [];
+  for (const row of groups.flat()) {
+    const ref = artistRef(row);
+    if (!ref.id || seen.has(ref.id) || ARTIST_NOISE.test(ref.name) || ref.name.length > 20) continue;
+    if (ref.trackCount < 1) continue;
+    seen.add(ref.id);
+    out.push(toRexArtist(ref));
+    if (out.length >= count) return out;
+  }
+  return out;
+}
+
+async function loadArtistDetail(id: string): Promise<VideoItem> {
+  const [info, entities] = await Promise.all([artistInfo(id), artistTracks(id)]);
+  const tracks = entities.map((entity) => toRexTrack(trackRef(entity)));
+  const subtitle = [tracks.length ? `${tracks.length} 首热门` : "", info.albumCount ? `${info.albumCount} 张专辑` : ""]
+    .filter(Boolean)
+    .join(" · ");
+  return {
+    ...toRexArtist(info),
+    ...(subtitle ? { subtitle } : {}),
+    ...(info.intro ? { description: info.intro.slice(0, 300) } : {}),
+    tracks,
+  };
+}
+
+/** 首页「歌手」分区；点进某个歌手时 Rex 会带 peopleId 再次调用 */
+export async function handleArtists(params: { peopleId?: string; id?: string } = {}): Promise<VideoItem[]> {
+  const peopleId = String(params.peopleId ?? params.id ?? "").trim();
+  if (/^\d{1,30}$/.test(peopleId)) return [await loadArtistDetail(peopleId)];
+  return handleHotArtists();
+}
+
 export async function handleSearch(params: { keyword?: string; kind?: string; page?: string }): Promise<VideoItem[]> {
   const keyword = String(params.keyword ?? "").trim();
   if (!keyword) return [];
-  if (params.kind === "playlists") return handlePlaylistSection(keyword, 30);
-  const entities = await searchTracks(keyword, 40);
-  return entities.map((entity) => toRexTrack(trackRef(entity)));
+  const kind = String(params.kind ?? "all");
+
+  if (kind === "artists") return (await searchArtists(keyword, 20)).map((row) => toRexArtist(artistRef(row)));
+  if (kind === "playlists") return handlePlaylistSection(keyword, 30);
+  if (kind === "songs" || kind === "tracks") {
+    return (await searchTracks(keyword, 40)).map((entity) => toRexTrack(trackRef(entity)));
+  }
+
+  // 混合结果：Rex 会按 mediaType 自动分组（歌手 / 歌曲 / 歌单）
+  const [artists, tracks, playlists] = await Promise.all([
+    searchArtists(keyword, 12).catch(() => [] as any[]),
+    searchTracks(keyword, 20).catch(() => [] as any[]),
+    searchPlaylists(keyword, 8).catch(() => [] as any[]),
+  ]);
+  return [
+    ...artists.map((row) => toRexArtist(artistRef(row))),
+    ...tracks.map((entity) => toRexTrack(trackRef(entity))),
+    ...playlists.map((row) => {
+      const base = row.base_info ?? {};
+      const cover = formatCover(row.display_info?.url_cover);
+      return {
+        id: `playlist-${base.id}`,
+        type: "url" as const,
+        mediaType: "playlist" as const,
+        link: playlistLink(String(base.id), String(base.owner_id ?? "")),
+        title: String(base.title ?? base.name ?? "歌单"),
+        ...(cover ? { posterPath: cover, coverUrl: cover } : {}),
+      };
+    }),
+  ];
 }
 
 async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoItem> {
@@ -156,6 +250,7 @@ export async function handleDetail(link: string): Promise<VideoItem> {
   if (!parsed) throw new Error(`无法识别的链接：${link}`);
   if (parsed.kind === "track") return loadTrackDetail(parsed.id);
   if (parsed.kind === "scene") return handleSceneDetail(parsed.id);
+  if (parsed.kind === "artist") return loadArtistDetail(parsed.id);
   return loadPlaylistDetail(parsed.id, parsed.ownerId);
 }
 

@@ -13,6 +13,11 @@ test("toLrcDataUri 的 UTF-8 base64 与标准实现逐字节一致", () => {
 test("parseLink 识别三种详情链接并拒绝非法输入", () => {
   expect(parseLink("qishui:track:1234567890")).toEqual({ kind: "track", id: "1234567890", ownerId: "" });
   expect(parseLink("qishui:scene:4")).toEqual({ kind: "scene", id: "4", ownerId: "" });
+  expect(parseLink("qishui:artist:6818416771607824386")).toEqual({
+    kind: "artist",
+    id: "6818416771607824386",
+    ownerId: "",
+  });
   expect(parseLink("qishui:playlist:123:_000-abc")).toEqual({ kind: "playlist", id: "123", ownerId: "_000-abc" });
   expect(parseLink("qishui:track:abc")).toBeNull();
   expect(parseLink("https://music.douyin.com/x")).toBeNull();

@@ -68,6 +68,22 @@ interface LoadScenesReturnType extends Array<VideoItem> {
 declare let loadScenes: (params: LoadScenesParams) => LoadScenesReturnType | Promise<LoadScenesReturnType>;
 //#endregion scenes
 
+//#region artists
+/** Params of 热门歌手 */
+interface LoadArtistsParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 热门歌手 */
+interface LoadArtistsReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 热门歌手
+ * @description 歌手主页与热门单曲
+ */
+declare let loadArtists: (params: LoadArtistsParams) => LoadArtistsReturnType | Promise<LoadArtistsReturnType>;
+//#endregion artists
+
 //#region loadSubtitle
 /** Params of 歌词 */
 interface LoadSubtitleParams extends QishuiMusic.GlobalParams, BaseParams {
@@ -91,9 +107,9 @@ interface SearchParams extends QishuiMusic.GlobalParams {
     keyword: string;
     /**
      * 结果类型
-     * @default 'songs'
+     * @default 'all'
      */
-    kind: 'songs' | 'playlists';
+    kind: 'all' | 'songs' | 'artists' | 'playlists';
 }
 
 /** Return Type of 搜索 */
@@ -102,7 +118,7 @@ interface SearchReturnType extends Array<VideoItem> {
 
 /**
  * 搜索
- * @description 搜索汽水音乐的歌曲与歌单
+ * @description 搜索汽水音乐的歌手、歌曲与歌单
  */
 declare let search: (params: SearchParams) => SearchReturnType | Promise<SearchReturnType>;
 //#endregion search

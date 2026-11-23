@@ -1,55 +1,55 @@
-function e(e, t, n, r, i, l, o) {
+function t(t, e, n, r, i, l, o) {
     try {
-        var a = e[l](o), u = a.value;
-    } catch (e) {
-        n(e);
+        var a = t[l](o), u = a.value;
+    } catch (t) {
+        n(t);
         return;
     }
-    a.done ? t(u) : Promise.resolve(u).then(r, i);
+    a.done ? e(u) : Promise.resolve(u).then(r, i);
 }
-function t(t) {
+function e(e) {
     return function() {
         var n = this, r = arguments;
         return new Promise(function(i, l) {
-            var o = t.apply(n, r);
-            function a(t) {
-                e(o, i, l, a, u, "next", t);
+            var o = e.apply(n, r);
+            function a(e) {
+                t(o, i, l, a, u, "next", e);
             }
-            function u(t) {
-                e(o, i, l, a, u, "throw", t);
+            function u(e) {
+                t(o, i, l, a, u, "throw", e);
             }
             a(void 0);
         });
     };
 }
-function n(e) {
-    for(var t = 1; t < arguments.length; t++){
-        var n = null != arguments[t] ? arguments[t] : {}, r = Object.keys(n);
-        "function" == typeof Object.getOwnPropertySymbols && (r = r.concat(Object.getOwnPropertySymbols(n).filter(function(e) {
-            return Object.getOwnPropertyDescriptor(n, e).enumerable;
-        }))), r.forEach(function(t) {
+function n(t) {
+    for(var e = 1; e < arguments.length; e++){
+        var n = null != arguments[e] ? arguments[e] : {}, r = Object.keys(n);
+        "function" == typeof Object.getOwnPropertySymbols && (r = r.concat(Object.getOwnPropertySymbols(n).filter(function(t) {
+            return Object.getOwnPropertyDescriptor(n, t).enumerable;
+        }))), r.forEach(function(e) {
             var r;
-            r = n[t], t in e ? Object.defineProperty(e, t, {
+            r = n[e], e in t ? Object.defineProperty(t, e, {
                 value: r,
                 enumerable: !0,
                 configurable: !0,
                 writable: !0
-            }) : e[t] = r;
+            }) : t[e] = r;
         });
     }
-    return e;
+    return t;
 }
-function r(e, t) {
-    return t = null != t ? t : {}, Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : (function(e) {
-        var t = Object.keys(e);
+function r(t, e) {
+    return e = null != e ? e : {}, Object.getOwnPropertyDescriptors ? Object.defineProperties(t, Object.getOwnPropertyDescriptors(e)) : (function(t) {
+        var e = Object.keys(t);
         if (Object.getOwnPropertySymbols) {
-            var n = Object.getOwnPropertySymbols(e);
-            t.push.apply(t, n);
+            var n = Object.getOwnPropertySymbols(t);
+            e.push.apply(e, n);
         }
-        return t;
-    })(Object(t)).forEach(function(n) {
-        Object.defineProperty(e, n, Object.getOwnPropertyDescriptor(t, n));
-    }), e;
+        return e;
+    })(Object(e)).forEach(function(n) {
+        Object.defineProperty(t, n, Object.getOwnPropertyDescriptor(e, n));
+    }), t;
 }
 let i = "/api/luna/v1/platform", l = "LunaOpenSDK/1.0.10", o = "1270651532221750165", a = {
     aid: "765213",
@@ -71,16 +71,16 @@ let i = "/api/luna/v1/platform", l = "LunaOpenSDK/1.0.10", o = "1270651532221750
     os_version: "13",
     ac: "wifi"
 };
-function u(e) {
-    if (!e) return "";
-    if ("string" == typeof e) return e;
-    let t = Array.isArray(e.urls) && e.urls.length ? String(e.urls[0]) : "", n = e.uri ? String(e.uri) : "";
-    if (!t || !n) return "";
-    let r = t + n, i = e.template_prefix ? String(e.template_prefix) : "";
+function u(t) {
+    if (!t) return "";
+    if ("string" == typeof t) return t;
+    let e = Array.isArray(t.urls) && t.urls.length ? String(t.urls[0]) : "", n = t.uri ? String(t.uri) : "";
+    if (!e || !n) return "";
+    let r = e + n, i = t.template_prefix ? String(t.template_prefix) : "";
     return i ? `${r}~${i}-origin.image` : r;
 }
-function c(e = {}) {
-    let t = r(n({}, a), {
+function c(t = {}) {
+    let e = r(n({}, a), {
         device_id: o,
         did: o,
         iid: o,
@@ -88,20 +88,20 @@ function c(e = {}) {
         _timestamp: String(Math.floor(Date.now() / 1000)),
         _nonce: String(Math.floor(9000 * Math.random()) + 1000)
     });
-    for(let n in e)Object.prototype.hasOwnProperty.call(e, n) && (t[n] = e[n]);
+    for(let n in t)Object.prototype.hasOwnProperty.call(t, n) && (e[n] = t[n]);
     let i = [];
-    for(let e in t)Object.prototype.hasOwnProperty.call(t, e) && i.push(`${encodeURIComponent(e)}=${encodeURIComponent(String(t[e]))}`);
+    for(let t in e)Object.prototype.hasOwnProperty.call(e, t) && i.push(`${encodeURIComponent(t)}=${encodeURIComponent(String(e[t]))}`);
     return i.join("&");
 }
-function s(e) {
-    return t(function*(e, t = {}) {
+function s(t) {
+    return e(function*(t, e = {}) {
         var i, l;
         let o = yield Widget.http.request(r(n({
-            url: e,
-            method: null != (i = t.method) ? i : "GET",
-            headers: null != (l = t.headers) ? l : {}
-        }, void 0 !== t.data ? {
-            data: t.data
+            url: t,
+            method: null != (i = e.method) ? i : "GET",
+            headers: null != (l = e.headers) ? l : {}
+        }, void 0 !== e.data ? {
+            data: e.data
         } : {}), {
             timeout: 20
         }));
@@ -109,27 +109,27 @@ function s(e) {
     }).apply(this, arguments);
 }
 let d = null;
-function f(e) {
-    return t(function*(e, o = {}) {
+function f(t) {
+    return e(function*(t, o = {}) {
         for(let p = 0;; p++){
             var a, u, f;
-            let y = yield function(e = !1) {
-                return t(function*() {
-                    if (!e && d && Date.now() - d.at < 1800000) return d.value;
-                    let t = yield s(`https://open.qishui.com${i}/client/token/get/?${c({
+            let y = yield function(t = !1) {
+                return e(function*() {
+                    if (!t && d && Date.now() - d.at < 1800000) return d.value;
+                    let e = yield s(`https://open.qishui.com${i}/client/token/get/?${c({
                         trigger_type: "cold_start"
                     })}`, {
                         headers: {
                             "user-agent": l
                         }
                     });
-                    if ("string" != typeof t.client_token || !t.client_token) throw Error(`汽水客户端令牌获取失败${t.err_msg ? `：${t.err_msg}` : ""}`);
+                    if ("string" != typeof e.client_token || !e.client_token) throw Error(`汽水客户端令牌获取失败${e.err_msg ? `：${e.err_msg}` : ""}`);
                     return (d = {
-                        value: t.client_token,
+                        value: e.client_token,
                         at: Date.now()
                     }).value;
                 })();
-            }(p > 0), m = yield s(`https://open.douyin.com${i}${e}?${c()}`, {
+            }(p > 0), m = yield s(`https://open.douyin.com${i}${t}?${c()}`, {
                 method: "POST",
                 headers: {
                     "user-agent": l,
@@ -148,149 +148,176 @@ function f(e) {
         }
     }).apply(this, arguments);
 }
-function p(e, n, r) {
-    return t(function*() {
-        var t;
+function p(t, n, r) {
+    return e(function*() {
+        var e;
         let i = `${Date.now()}-${Math.random().toString(16).slice(2)}`, l = yield f("/search/", {
             q: n,
             cursor: "0",
             search_id: i,
             from_search_id: i,
             search_method: "input",
-            search_type: e,
+            search_type: t,
             search_scene: "normal",
             scene_name: "search",
             ab_param: "",
             last_viewed_media: {}
-        }), o = Array.isArray(l.result_groups) ? l.result_groups : [], a = null != (t = o.find((t)=>t.id === `${e}s`)) ? t : o[0];
-        return (Array.isArray(null == a ? void 0 : a.data) ? a.data : []).map((t)=>{
+        }), o = Array.isArray(l.result_groups) ? l.result_groups : [], a = null != (e = o.find((e)=>e.id === `${t}s`)) ? e : o[0];
+        return (Array.isArray(null == a ? void 0 : a.data) ? a.data : []).map((e)=>{
             var n;
-            return null == (n = t.entity) ? void 0 : n[e];
+            return null == (n = e.entity) ? void 0 : n[t];
         }).filter(Boolean).slice(0, r);
     })();
 }
-function y(e, n = 30) {
-    return t(function*() {
-        let t = yield f("/feed/song-tab/", {
+function y(t, n = 30) {
+    return e(function*() {
+        return p("track", t, n);
+    })();
+}
+function m(t, n = 20) {
+    return e(function*() {
+        return p("playlist", t, n);
+    })();
+}
+function v(t, n = 20) {
+    return e(function*() {
+        return p("artist", t, n);
+    })();
+}
+function _(t) {
+    var e, n, r, i, l, o, a, c;
+    let s = null != (e = null != (n = null == t ? void 0 : t.base_info) ? n : t) ? e : {};
+    return {
+        id: String(null != (r = s.id) ? r : ""),
+        name: String(null != (i = null != (l = null != (o = s.full_display_name) ? o : s.simple_display_name) ? l : s.name) ? i : "未知歌手"),
+        avatar: u(s.url_avatar),
+        trackCount: Number(null != (a = s.count_tracks) ? a : 0),
+        albumCount: Number(null != (c = s.count_albums) ? c : 0),
+        intro: s.intro ? String(s.intro) : void 0
+    };
+}
+function h(t, n = 30) {
+    return e(function*() {
+        let e = yield f("/feed/song-tab/", {
             played_media: [],
             is_first_request: !0,
             with_client_cache: !1,
             is_did_first_request: !1,
             count: n,
             feed_preference: {
-                scene_mode_id: null == e ? null : Number(e),
-                scene_mode_select_time: null == e ? null : Date.now(),
+                scene_mode_id: null == t ? null : Number(t),
+                scene_mode_select_time: null == t ? null : Date.now(),
                 preference_mode: null,
                 total_request_count: 1,
                 preference_mode_request_count: 1,
                 current_mode_request_count: 1
             }
         });
-        return (Array.isArray(t.items) ? t.items : []).filter((e)=>!e.type || "track" === e.type).map((e)=>{
-            var t, n, r, i, l;
-            return null != (t = null != (n = null == (r = e.entity) ? void 0 : r.track) ? n : null == (l = e.entity) || null == (i = l.media) ? void 0 : i.track_entity) ? t : e;
+        return (Array.isArray(e.items) ? e.items : []).filter((t)=>!t.type || "track" === t.type).map((t)=>{
+            var e, n, r, i, l;
+            return null != (e = null != (n = null == (r = t.entity) ? void 0 : r.track) ? n : null == (l = t.entity) || null == (i = l.media) ? void 0 : i.track_entity) ? e : t;
         }).filter(Boolean);
     })();
 }
-function m(e) {
-    return t(function*() {
-        var t;
+function g(t) {
+    return e(function*() {
+        var e;
         let n = yield f("/media/mget/", {
             media_list: [
                 {
-                    id: e,
+                    id: t,
                     type: "track"
                 }
             ],
             card_context: {}
-        }), r = Array.isArray(n.media_list) ? n.media_list : [], i = null != (t = r.find((t)=>{
+        }), r = Array.isArray(n.media_list) ? n.media_list : [], i = null != (e = r.find((e)=>{
             var n, r, i;
-            return String(null != (n = t.media_id) ? n : null == (i = t.track_entity) || null == (r = i.base_info) ? void 0 : r.id) === String(e);
-        })) ? t : r[0];
+            return String(null != (n = e.media_id) ? n : null == (i = e.track_entity) || null == (r = i.base_info) ? void 0 : r.id) === String(t);
+        })) ? e : r[0];
         if (!(null == i ? void 0 : i.track_entity)) throw Error("汽水没有返回这首歌的信息");
         return i.track_entity;
     })();
 }
-function v(e) {
-    var t, n, r, i, l, o, a, c, s, d;
-    let f = null != (t = e.base_info) ? t : {}, p = null != (n = e.related_info) ? n : {}, y = Array.isArray(p.artist_links) ? p.artist_links.map((e)=>String(e.name || "")).filter(Boolean) : [];
+function b(t) {
+    var e, n, r, i, l, o, a, c, s, d;
+    let f = null != (e = t.base_info) ? e : {}, p = null != (n = t.related_info) ? n : {}, y = Array.isArray(p.artist_links) ? p.artist_links.map((t)=>String(t.name || "")).filter(Boolean) : [];
     return {
-        id: String(null != (r = null != (i = f.id) ? i : e.id) ? r : ""),
+        id: String(null != (r = null != (i = f.id) ? i : t.id) ? r : ""),
         name: String(null != (l = f.name) ? l : "未知歌曲"),
         artists: y.length ? y : [
             "未知歌手"
         ],
         album: (null == (c = p.album_link) ? void 0 : c.name) ? String(p.album_link.name) : void 0,
-        cover: u(null == (s = e.display_info) ? void 0 : s.cover_url),
+        cover: u(null == (s = t.display_info) ? void 0 : s.cover_url),
         durationMs: Number(null != (o = f.duration_ms) ? o : 0),
-        vip: "1 == 1" !== String(null != (a = null == (d = e.commerce_info) ? void 0 : d.playable_condition) ? a : "1 == 1")
+        vip: "1 == 1" !== String(null != (a = null == (d = t.commerce_info) ? void 0 : d.playable_condition) ? a : "1 == 1")
     };
 }
-function _(e, t, n, r, i, l, o) {
+function S(t, e, n, r, i, l, o) {
     try {
-        var a = e[l](o), u = a.value;
-    } catch (e) {
-        n(e);
+        var a = t[l](o), u = a.value;
+    } catch (t) {
+        n(t);
         return;
     }
-    a.done ? t(u) : Promise.resolve(u).then(r, i);
+    a.done ? e(u) : Promise.resolve(u).then(r, i);
 }
-function h(e) {
+function k(t) {
     return function() {
-        var t = this, n = arguments;
+        var e = this, n = arguments;
         return new Promise(function(r, i) {
-            var l = e.apply(t, n);
-            function o(e) {
-                _(l, r, i, o, a, "next", e);
+            var l = t.apply(e, n);
+            function o(t) {
+                S(l, r, i, o, a, "next", t);
             }
-            function a(e) {
-                _(l, r, i, o, a, "throw", e);
+            function a(t) {
+                S(l, r, i, o, a, "throw", t);
             }
             o(void 0);
         });
     };
 }
-function g(e) {
-    for(var t = 1; t < arguments.length; t++){
-        var n = null != arguments[t] ? arguments[t] : {}, r = Object.keys(n);
-        "function" == typeof Object.getOwnPropertySymbols && (r = r.concat(Object.getOwnPropertySymbols(n).filter(function(e) {
-            return Object.getOwnPropertyDescriptor(n, e).enumerable;
-        }))), r.forEach(function(t) {
+function $(t) {
+    for(var e = 1; e < arguments.length; e++){
+        var n = null != arguments[e] ? arguments[e] : {}, r = Object.keys(n);
+        "function" == typeof Object.getOwnPropertySymbols && (r = r.concat(Object.getOwnPropertySymbols(n).filter(function(t) {
+            return Object.getOwnPropertyDescriptor(n, t).enumerable;
+        }))), r.forEach(function(e) {
             var r;
-            r = n[t], t in e ? Object.defineProperty(e, t, {
+            r = n[e], e in t ? Object.defineProperty(t, e, {
                 value: r,
                 enumerable: !0,
                 configurable: !0,
                 writable: !0
-            }) : e[t] = r;
+            }) : t[e] = r;
         });
     }
-    return e;
+    return t;
 }
-function b(e, t) {
-    return t = null != t ? t : {}, Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : (function(e) {
-        var t = Object.keys(e);
+function w(t, e) {
+    return e = null != e ? e : {}, Object.getOwnPropertyDescriptors ? Object.defineProperties(t, Object.getOwnPropertyDescriptors(e)) : (function(t) {
+        var e = Object.keys(t);
         if (Object.getOwnPropertySymbols) {
-            var n = Object.getOwnPropertySymbols(e);
-            t.push.apply(t, n);
+            var n = Object.getOwnPropertySymbols(t);
+            e.push.apply(e, n);
         }
-        return t;
-    })(Object(t)).forEach(function(n) {
-        Object.defineProperty(e, n, Object.getOwnPropertyDescriptor(t, n));
-    }), e;
+        return e;
+    })(Object(e)).forEach(function(n) {
+        Object.defineProperty(t, n, Object.getOwnPropertyDescriptor(e, n));
+    }), t;
 }
-let S = "qishui:";
-function O(e, t = "") {
-    return `${S}playlist:${e}:${t}`;
+let O = "qishui:";
+function P(t, e = "") {
+    return `${O}playlist:${t}:${e}`;
 }
-function w(e) {
-    return `${S}scene:${e}`;
+function j(t) {
+    return `${O}scene:${t}`;
 }
-function $(e) {
-    let t = String(null != e ? e : "").trim();
-    if (!t.startsWith(S)) return null;
-    let [n, r, i = ""] = t.slice(S.length).split(":");
-    return r && /^\d{1,30}$/.test(r) ? "track" === n || "scene" === n ? {
+function D(t) {
+    let e = String(null != t ? t : "").trim();
+    if (!e.startsWith(O)) return null;
+    let [n, r, i = ""] = e.slice(O.length).split(":");
+    return r && /^\d{1,30}$/.test(r) ? "track" === n || "scene" === n || "artist" === n ? {
         kind: n,
         id: r,
         ownerId: ""
@@ -300,46 +327,64 @@ function $(e) {
         ownerId: i
     } : null : null;
 }
-function k(e) {
-    if (!Number.isFinite(e) || e <= 0) return "";
-    let t = Math.round(e / 1000);
-    return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
+function N(t) {
+    if (!Number.isFinite(t) || t <= 0) return "";
+    let e = Math.round(t / 1000);
+    return `${Math.floor(e / 60)}:${String(e % 60).padStart(2, "0")}`;
 }
-function P(e) {
-    var t;
+function A(t) {
+    var e;
     let n = [
-        e.artists.join(" / "),
-        e.album,
-        k(e.durationMs)
+        t.artists.join(" / "),
+        t.album,
+        N(t.durationMs)
     ].filter(Boolean).join(" · ");
-    return g({
-        id: e.id,
+    return $({
+        id: t.id,
         type: "url",
         mediaType: "song",
-        link: (t = e.id, `${S}track:${t}`),
-        title: e.name
+        link: (e = t.id, `${O}track:${e}`),
+        title: t.name
     }, n ? {
         subtitle: n
-    } : {}, e.cover ? {
-        posterPath: e.cover,
-        coverUrl: e.cover
+    } : {}, t.cover ? {
+        posterPath: t.cover,
+        coverUrl: t.cover
     } : {});
 }
-let j = new Map();
-function D(e, n = 10) {
-    return h(function*() {
-        return (yield function(e, n = 20) {
-            return t(function*() {
-                return p("playlist", e, n);
-            })();
-        }(e, n)).map((e)=>{
-            var t, n, r, i, l;
-            let o = null != (t = e.base_info) ? t : {}, a = u(null == (l = e.display_info) ? void 0 : l.url_cover);
-            return g({
+let M = new Map();
+function x(t) {
+    var e;
+    let n = [
+        t.trackCount ? `${t.trackCount} 首` : "",
+        t.albumCount ? `${t.albumCount} 张专辑` : ""
+    ].filter(Boolean).join(" · ");
+    return $({
+        id: t.id,
+        type: "person",
+        mediaType: "person",
+        link: (e = t.id, `${O}artist:${e}`),
+        title: t.name
+    }, n ? {
+        subtitle: n
+    } : {}, t.avatar ? {
+        avatar: t.avatar,
+        posterPath: t.avatar,
+        coverUrl: t.avatar
+    } : {}, t.intro ? {
+        description: t.intro.slice(0, 120)
+    } : {});
+}
+function C(t, e = 10) {
+    return k(function*() {
+        return (yield m(t, e)).map((t)=>{
+            var e, n, r, i, l;
+            let o = null != (e = t.base_info) ? e : {}, a = u(null == (l = t.display_info) ? void 0 : l.url_cover);
+            return $({
                 id: `playlist-${o.id}`,
                 type: "url",
                 mediaType: "playlist",
-                link: O(String(o.id), String(null != (n = o.owner_id) ? n : "")),
+                link: P(String(o.id), String(null != (n = o.owner_id) ? n : "")),
                 title: String(null != (r = null != (i = o.title) ? i : o.name) ? r : "歌单")
             }, a ? {
                 posterPath: a,
@@ -348,78 +393,111 @@ function D(e, n = 10) {
         });
     })();
 }
-let N = /^\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\](.*)$/, M = /^\[(\d+),(\d+)\](.*)$/, x = /<\d+,\d+(?:,\d+)?>/g;
-function A(e) {
-    let t = [];
-    for (let n of String(null != e ? e : "").split(/\r?\n/)){
-        let e = n.trim();
-        if (!e) continue;
-        let r = N.exec(e);
+let q = /歌手|歌曲|热门|榜单|合集|未知|^\s*$/;
+function B(t) {
+    return k(function*() {
+        let [n, r] = yield Promise.all([
+            e(function*() {
+                var e;
+                return _(null != (e = (yield f("/artist/detail/", {
+                    artist_id: t
+                })).artist_info) ? e : {});
+            })(),
+            function(t, n = 50) {
+                return e(function*() {
+                    let e = yield f("/artist/tracks/", {
+                        artist_id: t,
+                        count: n,
+                        cursor: "0"
+                    });
+                    return Array.isArray(e.tracks) ? e.tracks : [];
+                })();
+            }(t)
+        ]), i = r.map((t)=>A(b(t))), l = [
+            i.length ? `${i.length} 首热门` : "",
+            n.albumCount ? `${n.albumCount} 张专辑` : ""
+        ].filter(Boolean).join(" · ");
+        return w($({}, x(n), l ? {
+            subtitle: l
+        } : {}, n.intro ? {
+            description: n.intro.slice(0, 300)
+        } : {}), {
+            tracks: i
+        });
+    })();
+}
+let E = /^\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\](.*)$/, T = /^\[(\d+),(\d+)\](.*)$/, U = /<\d+,\d+(?:,\d+)?>/g;
+function I(t) {
+    let e = [];
+    for (let n of String(null != t ? t : "").split(/\r?\n/)){
+        let t = n.trim();
+        if (!t) continue;
+        let r = E.exec(t);
         if (r) {
-            let [, e, n, i = "0", l] = r, o = 60000 * Number(e) + 1000 * Number(n) + Number(i.padEnd(3, "0").slice(0, 3));
-            t.push({
+            let [, t, n, i = "0", l] = r, o = 60000 * Number(t) + 1000 * Number(n) + Number(i.padEnd(3, "0").slice(0, 3));
+            e.push({
                 ms: o,
                 text: l.trim()
             });
             continue;
         }
-        let i = M.exec(e);
-        i && t.push({
+        let i = T.exec(t);
+        i && e.push({
             ms: Number(i[1]),
-            text: i[3].replace(x, "").trim()
+            text: i[3].replace(U, "").trim()
         });
     }
-    return t;
+    return e;
 }
-function q(e) {
-    let t = Math.floor(e / 60000), n = Math.floor(e % 60000 / 1000), r = Math.floor(e % 1000 / 10);
-    return `[${String(t).padStart(2, "0")}:${String(n).padStart(2, "0")}.${String(r).padStart(2, "0")}]`;
+function R(t) {
+    let e = Math.floor(t / 60000), n = Math.floor(t % 60000 / 1000), r = Math.floor(t % 1000 / 10);
+    return `[${String(e).padStart(2, "0")}:${String(n).padStart(2, "0")}.${String(r).padStart(2, "0")}]`;
 }
-function E(e) {
-    return A(e).map((e)=>`${q(e.ms)}${e.text}`).join("\n");
+function L(t) {
+    return I(t).map((t)=>`${R(t.ms)}${t.text}`).join("\n");
 }
-let B = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-function C(e) {
-    return `data:text/plain;charset=utf-8;base64,${function(e) {
-        let t = function(e) {
-            let t = [];
-            for(let n = 0; n < e.length; n += 1){
-                let r = e.charCodeAt(n);
-                if (r >= 0xd800 && r <= 0xdbff && n + 1 < e.length) {
-                    let t = e.charCodeAt(n + 1);
-                    t >= 0xdc00 && t <= 0xdfff && (r = 0x10000 + (r - 0xd800 << 10) + (t - 0xdc00), n += 1);
+let W = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+function Y(t) {
+    return `data:text/plain;charset=utf-8;base64,${function(t) {
+        let e = function(t) {
+            let e = [];
+            for(let n = 0; n < t.length; n += 1){
+                let r = t.charCodeAt(n);
+                if (r >= 0xd800 && r <= 0xdbff && n + 1 < t.length) {
+                    let e = t.charCodeAt(n + 1);
+                    e >= 0xdc00 && e <= 0xdfff && (r = 0x10000 + (r - 0xd800 << 10) + (e - 0xdc00), n += 1);
                 }
-                r < 0x80 ? t.push(r) : r < 0x800 ? t.push(0xc0 | r >> 6, 0x80 | 63 & r) : r < 0x10000 ? t.push(0xe0 | r >> 12, 0x80 | r >> 6 & 63, 0x80 | 63 & r) : t.push(0xf0 | r >> 18, 0x80 | r >> 12 & 63, 0x80 | r >> 6 & 63, 0x80 | 63 & r);
+                r < 0x80 ? e.push(r) : r < 0x800 ? e.push(0xc0 | r >> 6, 0x80 | 63 & r) : r < 0x10000 ? e.push(0xe0 | r >> 12, 0x80 | r >> 6 & 63, 0x80 | 63 & r) : e.push(0xf0 | r >> 18, 0x80 | r >> 12 & 63, 0x80 | r >> 6 & 63, 0x80 | 63 & r);
             }
-            return t;
-        }(e), n = "";
-        for(let e = 0; e < t.length; e += 3){
+            return e;
+        }(t), n = "";
+        for(let t = 0; t < e.length; t += 3){
             var r, i;
-            let l = t[e] << 16 | (null != (r = t[e + 1]) ? r : 0) << 8 | (null != (i = t[e + 2]) ? i : 0);
-            n += B[l >> 18 & 63] + B[l >> 12 & 63], n += e + 1 < t.length ? B[l >> 6 & 63] : "=", n += e + 2 < t.length ? B[63 & l] : "=";
+            let l = e[t] << 16 | (null != (r = e[t + 1]) ? r : 0) << 8 | (null != (i = e[t + 2]) ? i : 0);
+            n += W[l >> 18 & 63] + W[l >> 12 & 63], n += t + 1 < e.length ? W[l >> 6 & 63] : "=", n += t + 2 < e.length ? W[63 & l] : "=";
         }
         return n;
-    }(e)}`;
+    }(t)}`;
 }
-function T(e, t, n, r, i, l, o) {
+function z(t, e, n, r, i, l, o) {
     try {
-        var a = e[l](o), u = a.value;
-    } catch (e) {
-        n(e);
+        var a = t[l](o), u = a.value;
+    } catch (t) {
+        n(t);
         return;
     }
-    a.done ? t(u) : Promise.resolve(u).then(r, i);
+    a.done ? e(u) : Promise.resolve(u).then(r, i);
 }
-function U(e) {
+function H(t) {
     return function() {
-        var t = this, n = arguments;
+        var e = this, n = arguments;
         return new Promise(function(r, i) {
-            var l = e.apply(t, n);
-            function o(e) {
-                T(l, r, i, o, a, "next", e);
+            var l = t.apply(e, n);
+            function o(t) {
+                z(l, r, i, o, a, "next", t);
             }
-            function a(e) {
-                T(l, r, i, o, a, "throw", e);
+            function a(t) {
+                z(l, r, i, o, a, "throw", t);
             }
             o(void 0);
         });
@@ -469,6 +547,14 @@ WidgetMetadata = {
             cacheDuration: 3600
         },
         {
+            id: "artists",
+            title: "热门歌手",
+            subtitle: "歌手主页与热门单曲",
+            type: "person",
+            functionName: "loadArtists",
+            cacheDuration: 86400
+        },
+        {
             id: "loadSubtitle",
             title: "歌词",
             subtitle: "汽水音乐时间轴歌词（原文 / 译文 / 双语）",
@@ -480,18 +566,26 @@ WidgetMetadata = {
     search: {
         id: "search",
         title: "搜索",
-        subtitle: "搜索汽水音乐的歌曲与歌单",
+        subtitle: "搜索汽水音乐的歌手、歌曲与歌单",
         functionName: "search",
         params: [
             {
                 name: "kind",
                 title: "结果类型",
                 type: "enumeration",
-                value: "songs",
+                value: "all",
                 enumOptions: [
+                    {
+                        title: "全部（歌手 / 歌曲 / 歌单）",
+                        value: "all"
+                    },
                     {
                         title: "歌曲",
                         value: "songs"
+                    },
+                    {
+                        title: "歌手",
+                        value: "artists"
                     },
                     {
                         title: "歌单",
@@ -501,106 +595,152 @@ WidgetMetadata = {
             }
         ]
     }
-}, loadScenes = ()=>U(function*() {
-        return h(function*() {
-            return (yield t(function*() {
-                let e = yield f("/feed/mode/", {});
-                return (Array.isArray(e.feed_mode_block) ? e.feed_mode_block : []).flatMap((e)=>{
-                    var t;
-                    return (null != (t = e.feed_mode) ? t : []).flatMap((t)=>{
+}, loadScenes = ()=>H(function*() {
+        return k(function*() {
+            return (yield e(function*() {
+                let t = yield f("/feed/mode/", {});
+                return (Array.isArray(t.feed_mode_block) ? t.feed_mode_block : []).flatMap((t)=>{
+                    var e;
+                    return (null != (e = t.feed_mode) ? e : []).flatMap((e)=>{
                         var n, r;
-                        let i = null == (n = t.entity) ? void 0 : n.feed_mode, l = null == i || null == (r = i.scene_mode) ? void 0 : r.scene_mode_id;
+                        let i = null == (n = e.entity) ? void 0 : n.feed_mode, l = null == i || null == (r = i.scene_mode) ? void 0 : r.scene_mode_id;
                         return null == l ? [] : [
                             {
                                 id: String(l),
                                 name: String(i.text || "推荐"),
-                                group: String(e.title || ""),
+                                group: String(t.title || ""),
                                 cover: u(i.url_info)
                             }
                         ];
                     });
                 });
-            })()).map((e)=>(j.set(e.id, e.name), g({
-                    id: `scene-${e.id}`,
+            })()).map((t)=>(M.set(t.id, t.name), $({
+                    id: `scene-${t.id}`,
                     type: "url",
                     mediaType: "playlist",
-                    link: w(e.id),
-                    title: e.name
-                }, e.group ? {
-                    subtitle: e.group
-                } : {}, e.cover ? {
-                    posterPath: e.cover,
-                    coverUrl: e.cover
+                    link: j(t.id),
+                    title: t.name
+                }, t.group ? {
+                    subtitle: t.group
+                } : {}, t.cover ? {
+                    posterPath: t.cover,
+                    coverUrl: t.cover
                 } : {})));
         })();
-    })(), loadRecommend = ()=>U(function*() {
-        return h(function*() {
-            return (yield y(null, 30)).map((e)=>P(v(e)));
+    })(), loadRecommend = ()=>H(function*() {
+        return k(function*() {
+            return (yield h(null, 30)).map((t)=>A(b(t)));
         })();
-    })(), loadHotPlaylists = ()=>U(function*() {
-        return D("热歌", 10);
-    })(), loadClassicPlaylists = ()=>U(function*() {
-        return D("经典老歌", 10);
-    })(), loadSubtitle = (e)=>U(function*() {
-        return h(function*() {
-            var t, n, r, i, l;
-            let o, a = e.link ? $(e.link) : null, u = (null == a ? void 0 : a.kind) === "track" ? a.id : /^\d{1,30}$/.test(String(null != (t = e.id) ? t : "")) ? String(e.id) : "";
+    })(), loadArtists = (t)=>H(function*() {
+        return function() {
+            return k(function*(t = {}) {
+                var e, n;
+                let r = String(null != (e = null != (n = t.peopleId) ? n : t.id) ? e : "").trim();
+                return /^\d{1,30}$/.test(r) ? [
+                    (yield B(r))
+                ] : function(t = 18) {
+                    return k(function*() {
+                        let e = yield Promise.all([
+                            "华语",
+                            "粤语",
+                            "欧美"
+                        ].map((t)=>v(t, 10).catch(()=>[]))), n = new Set(), r = [];
+                        for (let i of e.flat()){
+                            let e = _(i);
+                            if (!(!e.id || n.has(e.id) || q.test(e.name)) && !(e.name.length > 20) && !(e.trackCount < 1) && (n.add(e.id), r.push(x(e)), r.length >= t)) break;
+                        }
+                        return r;
+                    })();
+                }();
+            }).apply(this, arguments);
+        }(t);
+    })(), loadHotPlaylists = ()=>H(function*() {
+        return C("热歌", 10);
+    })(), loadClassicPlaylists = ()=>H(function*() {
+        return C("经典老歌", 10);
+    })(), loadSubtitle = (t)=>H(function*() {
+        return k(function*() {
+            var e, n, r, i, l;
+            let o, a = t.link ? D(t.link) : null, u = (null == a ? void 0 : a.kind) === "track" ? a.id : /^\d{1,30}$/.test(String(null != (e = t.id) ? e : "")) ? String(t.id) : "";
             if (!u) return [];
             let { original: c, translation: s } = {
-                original: String(null != (n = null == (o = null == (i = (yield m(u)).display_info) ? void 0 : i.lyric_info) || null == (l = o.lyric_entity) ? void 0 : l.content) ? n : ""),
-                translation: Object.values(null != (r = null == o ? void 0 : o.lang_translations) ? r : {}).map((e)=>{
-                    var t;
-                    return String(null != (t = null == e ? void 0 : e.content) ? t : "");
-                }).find((e)=>e.trim().length > 0)
+                original: String(null != (n = null == (o = null == (i = (yield g(u)).display_info) ? void 0 : i.lyric_info) || null == (l = o.lyric_entity) ? void 0 : l.content) ? n : ""),
+                translation: Object.values(null != (r = null == o ? void 0 : o.lang_translations) ? r : {}).map((t)=>{
+                    var e;
+                    return String(null != (e = null == t ? void 0 : t.content) ? e : "");
+                }).find((t)=>t.trim().length > 0)
             }, d = [];
             if (c && s) {
-                let e, t = (e = new Map(A(s).map((e)=>[
-                        e.ms,
-                        e.text
-                    ])), A(c).map((t)=>{
-                    let n = e.get(t.ms), r = n && n !== t.text ? `${t.text} / ${n}` : t.text;
-                    return `${q(t.ms)}${r}`;
+                let t, e = (t = new Map(I(s).map((t)=>[
+                        t.ms,
+                        t.text
+                    ])), I(c).map((e)=>{
+                    let n = t.get(e.ms), r = n && n !== e.text ? `${e.text} / ${n}` : e.text;
+                    return `${R(e.ms)}${r}`;
                 }).join("\n"));
-                t && d.push({
+                e && d.push({
                     id: `qishui:lyric:${u}:bilingual`,
                     title: "双语歌词",
                     lang: "zh-CN",
-                    url: C(t)
+                    url: Y(e)
                 });
             }
-            let f = c ? E(c) : "", p = s ? E(s) : "";
+            let f = c ? L(c) : "", p = s ? L(s) : "";
             return f && d.push({
                 id: `qishui:lyric:${u}:original`,
                 title: "原文歌词",
                 lang: "und",
-                url: C(f)
+                url: Y(f)
             }), p && d.push({
                 id: `qishui:lyric:${u}:translation`,
                 title: "中文翻译",
                 lang: "zh-CN",
-                url: C(p)
+                url: Y(p)
             }), d;
         })();
-    })(), search = (e)=>U(function*() {
-        return h(function*() {
-            var n;
-            let r = String(null != (n = e.keyword) ? n : "").trim();
-            return r ? "playlists" === e.kind ? D(r, 30) : (yield function(e, n = 30) {
-                return t(function*() {
-                    return p("track", e, n);
-                })();
-            }(r, 40)).map((e)=>P(v(e))) : [];
+    })(), search = (t)=>H(function*() {
+        return k(function*() {
+            var e, n;
+            let r = String(null != (e = t.keyword) ? e : "").trim();
+            if (!r) return [];
+            let i = String(null != (n = t.kind) ? n : "all");
+            if ("artists" === i) return (yield v(r, 20)).map((t)=>x(_(t)));
+            if ("playlists" === i) return C(r, 30);
+            if ("songs" === i || "tracks" === i) return (yield y(r, 40)).map((t)=>A(b(t)));
+            let [l, o, a] = yield Promise.all([
+                v(r, 12).catch(()=>[]),
+                y(r, 20).catch(()=>[]),
+                m(r, 8).catch(()=>[])
+            ]);
+            return [
+                ...l.map((t)=>x(_(t))),
+                ...o.map((t)=>A(b(t))),
+                ...a.map((t)=>{
+                    var e, n, r, i, l;
+                    let o = null != (e = t.base_info) ? e : {}, a = u(null == (l = t.display_info) ? void 0 : l.url_cover);
+                    return $({
+                        id: `playlist-${o.id}`,
+                        type: "url",
+                        mediaType: "playlist",
+                        link: P(String(o.id), String(null != (n = o.owner_id) ? n : "")),
+                        title: String(null != (r = null != (i = o.title) ? i : o.name) ? r : "歌单")
+                    }, a ? {
+                        posterPath: a,
+                        coverUrl: a
+                    } : {});
+                })
+            ];
         })();
-    })(), loadDetail = (e)=>U(function*() {
-        return h(function*() {
+    })(), loadDetail = (t)=>H(function*() {
+        return k(function*() {
             var n, r, i, o;
-            let a = $(e);
-            if (!a) throw Error(`无法识别的链接：${e}`);
-            return "track" === a.kind ? (n = a.id, h(function*() {
-                let e = yield m(n), r = v(e), i = yield t(function*() {
-                    let t = e.player_info;
-                    if (!t) throw Error("这首歌没有可播放音源");
-                    for (let [e, f] of [
+            let a = D(t);
+            if (!a) throw Error(`无法识别的链接：${t}`);
+            return "track" === a.kind ? (n = a.id, k(function*() {
+                let t = yield g(n), r = b(t), i = yield e(function*() {
+                    let e = t.player_info;
+                    if (!e) throw Error("这首歌没有可播放音源");
+                    for (let [t, f] of [
                         [
                             "full",
                             !1
@@ -611,15 +751,15 @@ WidgetMetadata = {
                         ]
                     ]){
                         var n, r, i, o, a, u, c, d;
-                        let p = null == (a = t[e]) ? void 0 : a.video_model_info;
+                        let p = null == (a = e[t]) ? void 0 : a.video_model_info;
                         if (!(null == p ? void 0 : p.url_player_info)) continue;
                         let y = yield s(String(p.url_player_info), {
                             headers: {
                                 "user-agent": l
                             }
-                        }), m = (null != (n = null != (r = null != (i = null == (c = y.Result) || null == (u = c.Data) ? void 0 : u.PlayInfoList) ? i : null == (d = y.data) ? void 0 : d.PlayInfoList) ? r : y.PlayInfoList) ? n : []).filter((e)=>(null == e ? void 0 : e.MainPlayUrl) && !e.PlayAuth && !e.EncryptionMethod).sort((e, t)=>{
+                        }), m = (null != (n = null != (r = null != (i = null == (c = y.Result) || null == (u = c.Data) ? void 0 : u.PlayInfoList) ? i : null == (d = y.data) ? void 0 : d.PlayInfoList) ? r : y.PlayInfoList) ? n : []).filter((t)=>(null == t ? void 0 : t.MainPlayUrl) && !t.PlayAuth && !t.EncryptionMethod).sort((t, e)=>{
                             var n, r;
-                            return Number(null != (n = t.Bitrate) ? n : 0) - Number(null != (r = e.Bitrate) ? r : 0);
+                            return Number(null != (n = e.Bitrate) ? n : 0) - Number(null != (r = t.Bitrate) ? r : 0);
                         });
                         if (!m.length) continue;
                         let v = m[0], _ = Number(null != (o = v.Duration) ? o : 0);
@@ -631,57 +771,57 @@ WidgetMetadata = {
                     }
                     throw Error("这首歌只有加密音源，暂不支持播放");
                 })(), o = [
-                    k(r.durationMs),
+                    N(r.durationMs),
                     i.preview ? "仅试听片段" : ""
                 ].filter(Boolean).join(" · ");
-                return b(g({}, P(r), o ? {
+                return w($({}, A(r), o ? {
                     description: o
                 } : {}), {
                     videoUrl: i.url
                 });
-            })()) : "scene" === a.kind ? (r = a.id, h(function*() {
-                var e;
-                let t = (yield y(r, 40)).map((e)=>P(v(e)));
+            })()) : "scene" === a.kind ? (r = a.id, k(function*() {
+                var t;
+                let e = (yield h(r, 40)).map((t)=>A(b(t)));
                 return {
                     id: `scene-${r}`,
                     type: "url",
                     mediaType: "playlist",
-                    link: w(r),
-                    title: null != (e = j.get(r)) ? e : "场景推荐",
-                    description: `${t.length} 首`,
-                    tracks: t
+                    link: j(r),
+                    title: null != (t = M.get(r)) ? t : "场景推荐",
+                    description: `${e.length} 首`,
+                    tracks: e
                 };
-            })()) : (i = a.id, o = a.ownerId, h(function*() {
-                var e, n, r, l, a, c;
-                let { playlist: s, entities: d } = yield function(e, n = "", r = 100) {
-                    return t(function*() {
-                        let t = yield f("/playlist/detail/", {
-                            playlist_id: e,
+            })()) : "artist" === a.kind ? B(a.id) : (i = a.id, o = a.ownerId, k(function*() {
+                var t, n, r, l, a, c;
+                let { playlist: s, entities: d } = yield function(t, n = "", r = 100) {
+                    return e(function*() {
+                        let e = yield f("/playlist/detail/", {
+                            playlist_id: t,
                             owner_id: n,
                             count: r,
                             cursor: "0",
                             type: null
-                        }), i = Array.isArray(t.media_entities) ? t.media_entities : [];
+                        }), i = Array.isArray(e.media_entities) ? e.media_entities : [];
                         return {
-                            playlist: t.playlist,
-                            entities: i.map((e)=>{
-                                var t, n, r, i, l;
-                                return null != (t = null != (n = null == (r = e.entity) ? void 0 : r.track) ? n : null == (l = e.entity) || null == (i = l.media) ? void 0 : i.track_entity) ? t : e;
+                            playlist: e.playlist,
+                            entities: i.map((t)=>{
+                                var e, n, r, i, l;
+                                return null != (e = null != (n = null == (r = t.entity) ? void 0 : r.track) ? n : null == (l = t.entity) || null == (i = l.media) ? void 0 : i.track_entity) ? e : t;
                             }).filter(Boolean)
                         };
                     })();
-                }(i, o), p = d.map((e)=>P(v(e))), y = null != (e = null == s ? void 0 : s.base_info) ? e : {}, m = u(null == s || null == (l = s.display_info) ? void 0 : l.url_cover), _ = [
+                }(i, o), p = d.map((t)=>A(b(t))), y = null != (t = null == s ? void 0 : s.base_info) ? t : {}, m = u(null == s || null == (l = s.display_info) ? void 0 : l.url_cover), v = [
                     null == s || null == (c = s.relation_info) || null == (a = c.owner) ? void 0 : a.name,
                     p.length ? `${p.length} 首` : ""
                 ].filter(Boolean).join(" · ");
-                return b(g({
+                return w($({
                     id: i,
                     type: "url",
                     mediaType: "playlist",
-                    link: O(i, o),
+                    link: P(i, o),
                     title: String(null != (n = null != (r = y.title) ? r : y.name) ? n : "歌单")
-                }, _ ? {
-                    subtitle: _
+                }, v ? {
+                    subtitle: v
                 } : {}, y.desc ? {
                     description: String(y.desc).slice(0, 200)
                 } : {}, m ? {
