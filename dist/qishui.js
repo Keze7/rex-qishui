@@ -558,7 +558,7 @@ function G(e) {
         return E(o.data), null != (n = null == (r = o.data) ? void 0 : r.data) ? n : {};
     }).apply(this, arguments);
 }
-function H(e, t, n, r, i, l, o) {
+function K(e, t, n, r, i, l, o) {
     try {
         var a = e[l](o), u = a.value;
     } catch (e) {
@@ -567,16 +567,16 @@ function H(e, t, n, r, i, l, o) {
     }
     a.done ? t(u) : Promise.resolve(u).then(r, i);
 }
-function K(e) {
+function H(e) {
     return function() {
         var t = this, n = arguments;
         return new Promise(function(r, i) {
             var l = e.apply(t, n);
             function o(e) {
-                H(l, r, i, o, a, "next", e);
+                K(l, r, i, o, a, "next", e);
             }
             function a(e) {
-                H(l, r, i, o, a, "throw", e);
+                K(l, r, i, o, a, "throw", e);
             }
             o(void 0);
         });
@@ -654,7 +654,7 @@ function er(e = {}) {
     return n.join("&");
 }
 function ei(e) {
-    return K(function*(e, t = {}) {
+    return H(function*(e, t = {}) {
         var n, r;
         let i = yield Widget.http.request(V(Q({
             url: e,
@@ -670,11 +670,11 @@ function ei(e) {
 }
 let el = null;
 function eo(e) {
-    return K(function*(e, t = {}) {
+    return H(function*(e, t = {}) {
         for(let l = 0;; l++){
             var n, r, i;
             let o = yield function(e = !1) {
-                return K(function*() {
+                return H(function*() {
                     if (!e && el && Date.now() - el.at < 1800000) return el.value;
                     let t = yield ei(`https://open.qishui.com${Z}/client/token/get/?${er({
                         trigger_type: "cold_start"
@@ -709,7 +709,7 @@ function eo(e) {
     }).apply(this, arguments);
 }
 function ea(e, t, n) {
-    return K(function*() {
+    return H(function*() {
         var r;
         let i = `${Date.now()}-${Math.random().toString(16).slice(2)}`, l = yield eo("/search/", {
             q: t,
@@ -730,17 +730,17 @@ function ea(e, t, n) {
     })();
 }
 function eu(e, t = 30) {
-    return K(function*() {
+    return H(function*() {
         return ea("track", e, t);
     })();
 }
 function ec(e, t = 20) {
-    return K(function*() {
+    return H(function*() {
         return ea("playlist", e, t);
     })();
 }
 function ef(e, t = 20) {
-    return K(function*() {
+    return H(function*() {
         return ea("artist", e, t);
     })();
 }
@@ -772,7 +772,7 @@ function es(e) {
     });
 }
 function ep(e) {
-    return K(function*() {
+    return H(function*() {
         var t;
         let n = yield eo("/album/detail/", {
             album_id: e
@@ -787,7 +787,7 @@ let em = Promise.resolve(), ey = new Map();
 function eh(e, t = 30, n = null) {
     let r = `${null != e ? e : ""}|${null != n ? n : ""}|${t}`, i = ey.get(r);
     if (i && Date.now() - i.at < 60000) return i.promise;
-    let l = ()=>K(function*() {
+    let l = ()=>H(function*() {
             let r = yield eo("/feed/song-tab/", {
                 played_media: [],
                 is_first_request: !0,
@@ -814,7 +814,7 @@ function eh(e, t = 30, n = null) {
     }), o.catch(()=>ey.delete(r)), ey.size > 20 && ey.clear(), o;
 }
 function ev(e) {
-    return K(function*() {
+    return H(function*() {
         var t;
         let n = yield eo("/media/mget/", {
             media_list: [
@@ -1059,14 +1059,14 @@ let ez = /歌手|歌曲|热门|榜单|合集|未知|^\s*$/;
 function eB(e) {
     return eb(function*() {
         let [t, n] = yield Promise.all([
-            K(function*() {
+            H(function*() {
                 var t;
                 return ed(null != (t = (yield eo("/artist/detail/", {
                     artist_id: e
                 })).artist_info) ? t : {});
             })(),
             function(e, t = 50) {
-                return K(function*() {
+                return H(function*() {
                     let n = yield eo("/artist/tracks/", {
                         artist_id: e,
                         count: t,
@@ -1142,7 +1142,7 @@ function eY(e) {
     }(e)}`;
 }
 let eG = `${eS}login:0`;
-function eH(e) {
+function eK(e) {
     let t = [
         e.vip ? "VIP" : "普通账号",
         e.userId
@@ -1169,7 +1169,7 @@ function eH(e) {
         ]
     });
 }
-function eK(e, t, n) {
+function eH(e, t, n) {
     return ex({
         id: "my-notice",
         type: "url",
@@ -1195,13 +1195,13 @@ function eQ(e, t) {
     };
 }
 function eV() {
-    return eK("点这里登录汽水音乐", "登录后才会显示账号里的歌单", "汽水音乐的账号数据要扫码授权才能读，接口不给匿名访问。");
+    return eH("点这里登录汽水音乐", "登录后才会显示账号里的歌单", "汽水音乐的账号数据要扫码授权才能读，接口不给匿名访问。");
 }
 function eZ() {
     return eb(function*() {
         let t = z();
         if (t) return [
-            eH(t)
+            eK(t)
         ];
         let l = T();
         if (l) {
@@ -1304,12 +1304,12 @@ function eZ() {
                 };
             });
             if ("done" === e.state && e.account) return [
-                eH(e.account)
+                eK(e.account)
             ];
             if ("unknown" === e.state) {
                 var o;
                 return [
-                    eK("登录没走完（把这段发我）", null != (o = e.debug) ? o : "没有详情")
+                    eH("登录没走完（把这段发我）", null != (o = e.debug) ? o : "没有详情")
                 ];
             }
             if ("expired" !== e.state) return [
@@ -1416,7 +1416,8 @@ WidgetMetadata = {
     title: "汽水音乐",
     description: "汽水音乐插件，基于车机开放接口：扫码登录后可用我的歌单与最近播放，另有每日推荐、新歌、猜你喜欢、专辑、歌单、场景、歌手、搜索、播放与时间轴歌词。免费曲目可完整播放，会员曲目只有试听片段",
     author: "self-hosted",
-    version: "0.2.2",
+    version: "0.2.3",
+    iconurl: "https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@main/assets/icon.png",
     requiredVersion: "0.0.7",
     contentType: "music",
     continuousPlay: !0,
@@ -1591,13 +1592,13 @@ WidgetMetadata = {
                         })();
                     }(e);
                     if (!t.length) return [
-                        eK("还没有歌单", "账号里没有自建或收藏的歌单")
+                        eH("还没有歌单", "账号里没有自建或收藏的歌单")
                     ];
                     return t.map(eM);
                 } catch (e) {
                     var t;
                     return [
-                        eK("歌单读取失败", String(null != (t = e.message) ? t : e).slice(0, 90))
+                        eH("歌单读取失败", String(null != (t = e.message) ? t : e).slice(0, 90))
                     ];
                 }
             })();
@@ -1635,13 +1636,13 @@ WidgetMetadata = {
                         })();
                     }(e);
                     if (!t.length) return [
-                        eK("还没有播放记录", "在汽水音乐里听几首歌再回来")
+                        eH("还没有播放记录", "在汽水音乐里听几首歌再回来")
                     ];
                     return t.map((e)=>ej(eg(e)));
                 } catch (e) {
                     var t;
                     return [
-                        eK("最近播放读取失败", String(null != (t = e.message) ? t : e).slice(0, 90))
+                        eH("最近播放读取失败", String(null != (t = e.message) ? t : e).slice(0, 90))
                     ];
                 }
             })();
@@ -1653,7 +1654,7 @@ WidgetMetadata = {
         };
     })(), loadScenes = ()=>e0(function*() {
         return eb(function*() {
-            return (yield K(function*() {
+            return (yield H(function*() {
                 let e = yield eo("/feed/mode/", {});
                 return (Array.isArray(e.feed_mode_block) ? e.feed_mode_block : []).flatMap((e)=>{
                     var t;
@@ -1794,7 +1795,7 @@ WidgetMetadata = {
             let o = eO(e);
             if (!o) throw Error(`无法识别的链接：${e}`);
             return "track" === o.kind ? (t = o.id, eb(function*() {
-                let e = yield ev(t), n = eg(e), r = yield K(function*() {
+                let e = yield ev(t), n = eg(e), r = yield H(function*() {
                     let t = e.player_info;
                     if (!t) throw Error("这首歌没有可播放音源");
                     for (let [e, f] of [
@@ -1860,7 +1861,7 @@ WidgetMetadata = {
                 let f;
                 try {
                     f = yield function(e, t = "", n = 200) {
-                        return K(function*() {
+                        return H(function*() {
                             let r, i = [], l = "0";
                             for(let m = 0; m < 8; m++){
                                 var o, a, u, c, f, d, s, p;

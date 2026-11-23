@@ -31,6 +31,7 @@ WidgetMetadata = {
     "汽水音乐插件，基于车机开放接口：扫码登录后可用我的歌单与最近播放，另有每日推荐、新歌、猜你喜欢、专辑、歌单、场景、歌手、搜索、播放与时间轴歌词。免费曲目可完整播放，会员曲目只有试听片段",
   author: "self-hosted",
   version: widgetVersion,
+  iconurl: "https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@main/assets/icon.png",
   requiredVersion: "0.0.7",
   contentType: "music",
   continuousPlay: true,
