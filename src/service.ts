@@ -67,6 +67,7 @@ function formatDuration(ms: number): string {
 
 function toRexTrack(ref: TrackRef): VideoItem {
   const subtitle = [ref.artists.join(" / "), ref.album, formatDuration(ref.durationMs)].filter(Boolean).join(" · ");
+  const seconds = Math.round(ref.durationMs / 1000);
   return {
     id: ref.id,
     type: "url",
@@ -74,6 +75,7 @@ function toRexTrack(ref: TrackRef): VideoItem {
     link: trackLink(ref.id),
     title: ref.name,
     ...(subtitle ? { subtitle } : {}),
+    ...(seconds > 0 ? { duration: seconds, durationText: formatDuration(ref.durationMs) } : {}),
     ...(ref.cover ? { posterPath: ref.cover, coverUrl: ref.cover } : {}),
   };
 }
@@ -535,7 +537,8 @@ export async function handleMyPlaylists(count = 50): Promise<VideoItem[]> {
     if (!rows.length) return [noticeItem("还没有歌单", "账号里没有自建或收藏的歌单")];
     const playlists = rows.map(toRexPlaylist);
     const songs = await playlistSongs(rows).catch(() => [] as VideoItem[]);
-    return [...playlists, ...songs];
+    // 歌曲放最前面：宿主只按列表开头的歌曲建队列，卡片垫在后面仍可点进歌单
+    return [...songs, ...playlists];
   } catch (error) {
     return [noticeItem("歌单读取失败", String((error as Error).message ?? error).slice(0, 90))];
   }

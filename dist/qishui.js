@@ -271,7 +271,7 @@ function b(e) {
         });
     };
 }
-function k(e) {
+function x(e) {
     for(var t = 1; t < arguments.length; t++){
         var n = null != arguments[t] ? arguments[t] : {}, r = Object.keys(n);
         "function" == typeof Object.getOwnPropertySymbols && (r = r.concat(Object.getOwnPropertySymbols(n).filter(function(e) {
@@ -288,7 +288,7 @@ function k(e) {
     }
     return e;
 }
-function x(e, t) {
+function k(e, t) {
     return t = null != t ? t : {}, Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : (function(e) {
         var t = Object.keys(e);
         if (Object.getOwnPropertySymbols) {
@@ -321,7 +321,7 @@ let S = "/api/luna/v1/platform", w = "aw4bbxfujo741d09", $ = "127065153222175016
     ac: "wifi"
 };
 function D(e) {
-    let t = k(x(k({}, j), {
+    let t = x(k(x({}, j), {
         device_id: $,
         did: $,
         iid: $,
@@ -340,10 +340,10 @@ function A(e) {
 function C(e) {
     return b(function*(e, t = {}) {
         var n, r, i, l;
-        let o = yield Widget.http.request(x(k({
+        let o = yield Widget.http.request(k(x({
             url: e,
             method: null != (n = t.method) ? n : "GET",
-            headers: k({
+            headers: x({
                 "user-agent": "LunaOpenSDK/1.0.10"
             }, null != (r = t.headers) ? r : {})
         }, void 0 !== t.data ? {
@@ -380,13 +380,13 @@ function q(e) {
         return null;
     }
 }
-function I(e, t) {
+function M(e, t) {
     try {
         var n;
         null == (n = Widget.storage) || n.set(e, t);
     } catch (e) {}
 }
-function M(e) {
+function I(e) {
     try {
         var t;
         null == (t = Widget.storage) || t.remove(e);
@@ -415,11 +415,11 @@ function B() {
     for(let n in e)t.push(`${encodeURIComponent(n)}=${encodeURIComponent(e[n])}`);
     return t.join("&");
 }
-function U() {
+function T() {
     let e = q(P);
     return !e || !e.qr || e.expiresAt < Date.now() ? null : e;
 }
-function T(t, r, i) {
+function U(t, r, i) {
     return b(function*() {
         var l, o, a;
         if (!(null == t ? void 0 : t.access_code)) throw Error("登录凭据缺失");
@@ -429,7 +429,7 @@ function T(t, r, i) {
             device_platform: "android"
         })}`, c = yield C(u, {
             method: "POST",
-            headers: k({
+            headers: x({
                 "content-type": "application/x-www-form-urlencoded",
                 "bd-ticket-guard-version": "1"
             }, i.csr ? {
@@ -532,12 +532,12 @@ function G(e) {
                 access_code: i.accessCode
             })}`);
             E(t.data);
-            let n = (null == (e = t.data) ? void 0 : e.data) || t.data, r = yield T(n, i.key, {
+            let n = (null == (e = t.data) ? void 0 : e.data) || t.data, r = yield U(n, i.key, {
                 cert: i.cert
-            }), l = x(k({}, i, r), {
+            }), l = k(x({}, i, r), {
                 accessCode: String(n.access_code || i.accessCode)
             });
-            return I(O, l), l;
+            return M(O, l), l;
         })().finally(()=>{
             Y = null;
         })), o = yield C(`https://open.douyin.com${S}${e}?${D({})}`, {
@@ -549,7 +549,7 @@ function G(e) {
                 "bd-ticket-guard-client-cert": l.cert,
                 "bd-ticket-guard-client-data": J(l, e)
             },
-            data: JSON.stringify(x(k({}, t), {
+            data: JSON.stringify(k(x({}, t), {
                 common_params: {
                     user_id: l.userId
                 }
@@ -882,7 +882,7 @@ function eb(e, t, n, r, i, l, o) {
     }
     a.done ? t(u) : Promise.resolve(u).then(r, i);
 }
-function ek(e) {
+function ex(e) {
     return function() {
         var t = this, n = arguments;
         return new Promise(function(r, i) {
@@ -897,7 +897,7 @@ function ek(e) {
         });
     };
 }
-function ex(e) {
+function ek(e) {
     for(var t = 1; t < arguments.length; t++){
         var n = null != arguments[t] ? arguments[t] : {}, r = Object.keys(n);
         "function" == typeof Object.getOwnPropertySymbols && (r = r.concat(Object.getOwnPropertySymbols(n).filter(function(e) {
@@ -958,8 +958,8 @@ function eD(e) {
         e.artists.join(" / "),
         e.album,
         ej(e.durationMs)
-    ].filter(Boolean).join(" · ");
-    return ex({
+    ].filter(Boolean).join(" · "), r = Math.round(e.durationMs / 1000);
+    return ek({
         id: e.id,
         type: "url",
         mediaType: "song",
@@ -967,6 +967,9 @@ function eD(e) {
         title: e.name
     }, n ? {
         subtitle: n
+    } : {}, r > 0 ? {
+        duration: r,
+        durationText: ej(e.durationMs)
     } : {}, e.cover ? {
         posterPath: e.cover,
         coverUrl: e.cover
@@ -979,7 +982,7 @@ function eC(e) {
         e.trackCount ? `${e.trackCount} 首` : "",
         e.albumCount ? `${e.albumCount} 张专辑` : ""
     ].filter(Boolean).join(" · ");
-    return ex({
+    return ek({
         id: e.id,
         type: "person",
         mediaType: "person",
@@ -1002,7 +1005,7 @@ function eN(e) {
         e.trackCount ? `${e.trackCount} 首` : "",
         null != (t = e.releaseDate) ? t : ""
     ].filter(Boolean).join(" · ");
-    return ex({
+    return ek({
         id: e.id,
         type: "url",
         mediaType: "album",
@@ -1018,7 +1021,7 @@ function eN(e) {
     } : {});
 }
 function eE(e, t = 8) {
-    return ek(function*() {
+    return ex(function*() {
         let n = (function(e) {
             let t = new Set(), n = [];
             for (let l of e){
@@ -1031,7 +1034,7 @@ function eE(e, t = 8) {
             }
             return n;
         })(e).slice(0, t);
-        return (yield Promise.all(n.map((e)=>ek(function*() {
+        return (yield Promise.all(n.map((e)=>ex(function*() {
                 try {
                     let { album: t } = yield em(e.id);
                     return ep(t);
@@ -1047,20 +1050,20 @@ function eE(e, t = 8) {
     })();
 }
 function eq(e, t = 30) {
-    return ek(function*() {
+    return ex(function*() {
         return (yield ev(null, t, e)).map((e)=>eD(e_(e)));
     })();
 }
-function eI(e) {
+function eM(e) {
     return !Number.isFinite(e) || e <= 0 ? "" : e >= 100000000 ? `${(e / 100000000).toFixed(1)}亿` : e >= 10000 ? `${(e / 10000).toFixed(1)}万` : String(e);
 }
-function eM(e) {
+function eI(e) {
     var t, n, r, i, l, o, a, u, c;
-    let f = null != (t = e.base_info) ? t : {}, d = er(null == (a = e.display_info) ? void 0 : a.url_cover), s = eI(Number(null != (n = null == (u = e.stats) ? void 0 : u.count_collected) ? n : 0)), p = "number" == typeof e.resource_cnt ? e.resource_cnt : Number(null != (r = null == (c = e.resource_cnt) ? void 0 : c.track_cnt) ? r : 0), m = [
+    let f = null != (t = e.base_info) ? t : {}, d = er(null == (a = e.display_info) ? void 0 : a.url_cover), s = eM(Number(null != (n = null == (u = e.stats) ? void 0 : u.count_collected) ? n : 0)), p = "number" == typeof e.resource_cnt ? e.resource_cnt : Number(null != (r = null == (c = e.resource_cnt) ? void 0 : c.track_cnt) ? r : 0), m = [
         s ? `${s} 收藏` : "",
         p ? `${p} 首` : ""
     ].filter(Boolean).join(" · ");
-    return ex({
+    return ek({
         id: `playlist-${f.id}`,
         type: "url",
         mediaType: "playlist",
@@ -1074,13 +1077,13 @@ function eM(e) {
     } : {});
 }
 function ez(e, t = 10) {
-    return ek(function*() {
-        return (yield ef(e, t)).map(eM);
+    return ex(function*() {
+        return (yield ef(e, t)).map(eI);
     })();
 }
 let eB = /歌手|歌曲|热门|榜单|合集|未知|^\s*$/;
-function eU(e) {
-    return ek(function*() {
+function eT(e) {
+    return ex(function*() {
         let [t, n] = yield Promise.all([
             Q(function*() {
                 var t;
@@ -1102,7 +1105,7 @@ function eU(e) {
             r.length ? `${r.length} 首热门` : "",
             t.albumCount ? `${t.albumCount} 张专辑` : ""
         ].filter(Boolean).join(" · ");
-        return eS(ex({}, eC(t), i ? {
+        return eS(ek({}, eC(t), i ? {
             subtitle: i
         } : {}, t.intro ? {
             description: t.intro.slice(0, 300)
@@ -1111,13 +1114,13 @@ function eU(e) {
         });
     })();
 }
-let eT = /^\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\](.*)$/, eR = /^\[(\d+),(\d+)\](.*)$/, eL = /<\d+,\d+(?:,\d+)?>/g;
+let eU = /^\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\](.*)$/, eR = /^\[(\d+),(\d+)\](.*)$/, eL = /<\d+,\d+(?:,\d+)?>/g;
 function eF(e) {
     let t = [];
     for (let n of String(null != e ? e : "").split(/\r?\n/)){
         let e = n.trim();
         if (!e) continue;
-        let r = eT.exec(e);
+        let r = eU.exec(e);
         if (r) {
             let [, e, n, i = "0", l] = r, o = 60000 * Number(e) + 1000 * Number(n) + Number(i.padEnd(3, "0").slice(0, 3));
             t.push({
@@ -1170,7 +1173,7 @@ function eK(e) {
         e.vip ? "VIP" : "普通账号",
         e.userId
     ].filter(Boolean).join(" · ");
-    return eS(ex(eS(ex({
+    return eS(ek(eS(ek({
         id: "my-account",
         type: "url",
         link: eH,
@@ -1193,7 +1196,7 @@ function eK(e) {
     });
 }
 function eQ(e, t, n) {
-    return ex({
+    return ek({
         id: "my-notice",
         type: "url",
         link: eH,
@@ -1221,21 +1224,21 @@ function eZ() {
     return eQ("点这里登录汽水音乐", "登录后才会显示账号里的歌单", "汽水音乐的账号数据要扫码授权才能读，接口不给匿名访问。");
 }
 function eX() {
-    return ek(function*() {
+    return ex(function*() {
         let t = z();
         if (t) return [
             eK(t)
         ];
-        let l = U();
+        let l = T();
         if (l) {
             let e = yield b(function*() {
                 var e, t, n, r;
-                let i = U();
+                let i = T();
                 if (!i) return {
                     state: "expired"
                 };
                 let l = null == (t = (yield C(`https://open.douyin.com/oauth/check_qrcode/?${B()}&token=${encodeURIComponent(i.token)}&timestamp=${Date.now()}`)).data) ? void 0 : t.data, o = String(null != (e = null == l ? void 0 : l.status) ? e : "").toLowerCase(), a = L[o];
-                return "expired" === a ? (M(P), {
+                return "expired" === a ? (I(P), {
                     state: "expired"
                 }) : "waiting" === a || "scanned" === a ? {
                     state: a
@@ -1277,7 +1280,7 @@ function eX() {
                             if (!o) throw t instanceof Error ? t : Error("授权码兑换失败");
                         }
                         if (!(null == o ? void 0 : o.access_code)) throw Error("access_code 缺失");
-                        let u = yield T(o, r.key, {
+                        let u = yield U(o, r.key, {
                             csr: r.csr
                         });
                         a.push(`ticket ok expires=${u.expiresAt}`);
@@ -1297,13 +1300,13 @@ function eX() {
                         E(c.data);
                         let f = null == (i = c.data) || null == (t = i.data) ? void 0 : t.my_info;
                         if (a.push(`me/info ${c.status} ${F(c.data)}`), !(null == f ? void 0 : f.id)) throw Error("账号信息读取失败");
-                        let d = x(k({}, u), {
+                        let d = k(x({}, u), {
                             userId: String(f.id),
                             nickname: String(null != (e = f.nickname) ? e : ""),
                             avatar: String(f.medium_avatar_url || f.avatar_url || ""),
                             vip: !0 === f.is_vip
                         });
-                        if (I(O, d), M(P), !z()) return {
+                        if (M(O, d), I(P), !z()) return {
                             state: "unknown",
                             debug: "票据拿到了但本地存不进去（Widget.storage 不可写）"
                         };
@@ -1396,7 +1399,7 @@ function eX() {
                     } catch (e) {}
                     return t[0];
                 })());
-                return I(P, {
+                return M(P, {
                     token: String(c.token),
                     key: o.toString(16),
                     csr: u,
@@ -1439,7 +1442,7 @@ WidgetMetadata = {
     title: "汽水音乐",
     description: "汽水音乐插件，基于车机开放接口：扫码登录后可用我的歌单与最近播放，另有每日推荐、新歌、猜你喜欢、专辑、歌单、场景、歌手、搜索、播放与时间轴歌词。免费曲目可完整播放，会员曲目只有试听片段",
     author: "self-hosted",
-    version: "0.2.0",
+    version: "0.2.1",
     requiredVersion: "0.0.7",
     contentType: "music",
     continuousPlay: !0,
@@ -1590,7 +1593,7 @@ WidgetMetadata = {
         return eX();
     })(), loadMyPlaylists = ()=>e1(function*() {
         return function(e = 50) {
-            return ek(function*() {
+            return ex(function*() {
                 if (!z()) return [
                     eZ()
                 ];
@@ -1616,25 +1619,25 @@ WidgetMetadata = {
                     if (!t.length) return [
                         eQ("还没有歌单", "账号里没有自建或收藏的歌单")
                     ];
-                    let n = t.map(eM), r = yield (function(e, t = 20, n = 60) {
-                        return ek(function*() {
-                            let r = yield Promise.all(e.slice(0, 4).map((e)=>ek(function*() {
-                                    var n, r, i, l;
-                                    let o = null != (n = e.base_info) ? n : {}, a = String(null != (r = o.id) ? r : "");
-                                    return a && null != (l = (yield H(a, String(null != (i = o.owner_id) ? i : ""), t).catch(()=>({
-                                            entities: []
-                                        }))).entities) ? l : [];
-                                })())), i = new Set(), l = [];
-                            for (let e of r.flat()){
-                                let t = e_(e);
-                                if (!(!t.id || i.has(t.id)) && (i.add(t.id), l.push(eD(t)), l.length >= n)) break;
-                            }
-                            return l;
-                        })();
-                    })(t).catch(()=>[]);
+                    let n = t.map(eI);
                     return [
-                        ...n,
-                        ...r
+                        ...yield (function(e, t = 20, n = 60) {
+                            return ex(function*() {
+                                let r = yield Promise.all(e.slice(0, 4).map((e)=>ex(function*() {
+                                        var n, r, i, l;
+                                        let o = null != (n = e.base_info) ? n : {}, a = String(null != (r = o.id) ? r : "");
+                                        return a && null != (l = (yield H(a, String(null != (i = o.owner_id) ? i : ""), t).catch(()=>({
+                                                entities: []
+                                            }))).entities) ? l : [];
+                                    })())), i = new Set(), l = [];
+                                for (let e of r.flat()){
+                                    let t = e_(e);
+                                    if (!(!t.id || i.has(t.id)) && (i.add(t.id), l.push(eD(t)), l.length >= n)) break;
+                                }
+                                return l;
+                            })();
+                        })(t).catch(()=>[]),
+                        ...n
                     ];
                 } catch (e) {
                     var t;
@@ -1646,7 +1649,7 @@ WidgetMetadata = {
         }();
     })(), loadRecentPlayed = ()=>e1(function*() {
         return function(e = 50) {
-            return ek(function*() {
+            return ex(function*() {
                 if (!z()) return [
                     eZ()
                 ];
@@ -1664,7 +1667,7 @@ WidgetMetadata = {
                                 });
                                 for (let n of Array.isArray(l.media) ? l.media : []){
                                     let r = null == n ? void 0 : n.media;
-                                    if ((null == r ? void 0 : r.track_entity) && (t.push(x(k({}, r.track_entity), {
+                                    if ((null == r ? void 0 : r.track_entity) && (t.push(k(x({}, r.track_entity), {
                                         playedAt: Number(null != (i = n.play_start_timestamp) ? i : 0)
                                     })), t.length >= e)) break;
                                 }
@@ -1689,12 +1692,12 @@ WidgetMetadata = {
             })();
         }();
     })(), logoutAccount = ()=>e1(function*() {
-        return M(O), M(P), {
+        return I(O), I(P), {
             message: "已退出登录",
             refresh: !0
         };
     })(), loadScenes = ()=>e1(function*() {
-        return ek(function*() {
+        return ex(function*() {
             return (yield Q(function*() {
                 let e = yield ea("/feed/mode/", {});
                 return (Array.isArray(e.feed_mode_block) ? e.feed_mode_block : []).flatMap((e)=>{
@@ -1712,7 +1715,7 @@ WidgetMetadata = {
                         ];
                     });
                 });
-            })()).map((e)=>(eA.set(e.id, e.name), ex({
+            })()).map((e)=>(eA.set(e.id, e.name), ek({
                     id: `scene-${e.id}`,
                     type: "url",
                     mediaType: "playlist",
@@ -1726,7 +1729,7 @@ WidgetMetadata = {
                 } : {})));
         })();
     })(), loadRecommend = ()=>e1(function*() {
-        return ek(function*() {
+        return ex(function*() {
             return (yield ev(null, 30)).map((e)=>eD(e_(e)));
         })();
     })(), loadDaily = ()=>e1(function*() {
@@ -1737,19 +1740,19 @@ WidgetMetadata = {
         return eq("familiar", 30);
     })(), loadAlbums = ()=>e1(function*() {
         return function(e = 10) {
-            return ek(function*() {
+            return ex(function*() {
                 return eE((yield ev(null, 30, "daily")), e);
             })();
         }(10);
     })(), loadArtists = (e)=>e1(function*() {
         return function() {
-            return ek(function*(e = {}) {
+            return ex(function*(e = {}) {
                 var t, n;
                 let r = String(null != (t = null != (n = e.peopleId) ? n : e.id) ? t : "").trim();
                 return /^\d{1,30}$/.test(r) ? [
-                    (yield eU(r))
+                    (yield eT(r))
                 ] : function(e = 18) {
-                    return ek(function*() {
+                    return ex(function*() {
                         let t = yield Promise.all([
                             "华语",
                             "粤语",
@@ -1769,7 +1772,7 @@ WidgetMetadata = {
     })(), loadClassicPlaylists = ()=>e1(function*() {
         return ez("经典老歌", 10);
     })(), loadSubtitle = (e)=>e1(function*() {
-        return ek(function*() {
+        return ex(function*() {
             var t, n, r, i, l;
             let o, a = e.link ? eP(e.link) : null, u = (null == a ? void 0 : a.kind) === "track" ? a.id : /^\d{1,30}$/.test(String(null != (t = e.id) ? t : "")) ? String(e.id) : "";
             if (!u) return [];
@@ -1809,7 +1812,7 @@ WidgetMetadata = {
             }), d;
         })();
     })(), search = (e)=>e1(function*() {
-        return ek(function*() {
+        return ex(function*() {
             var t, n;
             let r = String(null != (t = e.keyword) ? t : "").trim();
             if (!r) return [];
@@ -1827,15 +1830,15 @@ WidgetMetadata = {
                 ...l.map((e)=>eC(es(e))),
                 ...u,
                 ...o.map((e)=>eD(e_(e))),
-                ...a.map(eM)
+                ...a.map(eI)
             ];
         })();
     })(), loadDetail = (e)=>e1(function*() {
-        return ek(function*() {
+        return ex(function*() {
             var t, n, r, i, l;
             let o = eP(e);
             if (!o) throw Error(`无法识别的链接：${e}`);
-            return "track" === o.kind ? (t = o.id, ek(function*() {
+            return "track" === o.kind ? (t = o.id, ex(function*() {
                 let e = yield eg(t), n = e_(e), r = yield Q(function*() {
                     let t = e.player_info;
                     if (!t) throw Error("这首歌没有可播放音源");
@@ -1873,12 +1876,12 @@ WidgetMetadata = {
                     ej(n.durationMs),
                     r.preview ? "仅试听片段" : ""
                 ].filter(Boolean).join(" · ");
-                return eS(ex({}, eD(n), i ? {
+                return eS(ek({}, eD(n), i ? {
                     description: i
                 } : {}), {
                     videoUrl: r.url
                 });
-            })()) : "scene" === o.kind ? (n = o.id, ek(function*() {
+            })()) : "scene" === o.kind ? (n = o.id, ex(function*() {
                 var e;
                 let t = (yield ev(n, 40)).map((e)=>eD(e_(e)));
                 return {
@@ -1890,14 +1893,14 @@ WidgetMetadata = {
                     description: `${t.length} 首`,
                     tracks: t
                 };
-            })()) : "artist" === o.kind ? eU(o.id) : "album" === o.kind ? (r = o.id, ek(function*() {
+            })()) : "artist" === o.kind ? eT(o.id) : "album" === o.kind ? (r = o.id, ex(function*() {
                 let { album: e, entities: t } = yield em(r), n = ep(e);
-                return eS(ex({}, eN(n), n.intro ? {
+                return eS(ek({}, eN(n), n.intro ? {
                     description: n.intro.slice(0, 300)
                 } : {}), {
                     tracks: t.map((e)=>eD(e_(e)))
                 });
-            })()) : "login" === o.kind ? (yield eX())[0] : (i = o.id, l = o.ownerId, ek(function*() {
+            })()) : "login" === o.kind ? (yield eX())[0] : (i = o.id, l = o.ownerId, ex(function*() {
                 var e, t, n, r, o, a, u, c;
                 let f;
                 try {
@@ -1933,12 +1936,12 @@ WidgetMetadata = {
                         throw Error("这个歌单打不开：车机接口不给收藏来的歌单");
                     });
                 }
-                let { playlist: d, entities: s } = f, p = s.map((e)=>eD(e_(e))), m = null != (e = null == d ? void 0 : d.base_info) ? e : {}, y = er(null == d || null == (o = d.display_info) ? void 0 : o.url_cover), h = null == d || null == (u = d.relation_info) || null == (a = u.owner) ? void 0 : a.name, v = eI(Number(null != (t = null == d || null == (c = d.stats) ? void 0 : c.count_collected) ? t : 0)), g = [
+                let { playlist: d, entities: s } = f, p = s.map((e)=>eD(e_(e))), m = null != (e = null == d ? void 0 : d.base_info) ? e : {}, y = er(null == d || null == (o = d.display_info) ? void 0 : o.url_cover), h = null == d || null == (u = d.relation_info) || null == (a = u.owner) ? void 0 : a.name, v = eM(Number(null != (t = null == d || null == (c = d.stats) ? void 0 : c.count_collected) ? t : 0)), g = [
                     h,
                     v ? `${v} 收藏` : "",
                     p.length ? `${p.length} 首` : ""
                 ].filter(Boolean).join(" · ");
-                return eS(ex({
+                return eS(ek({
                     id: i,
                     type: "url",
                     mediaType: "playlist",
