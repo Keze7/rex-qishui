@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="rex-widget" content="type=poster-full">
+<title>海报横滑</title>
+<style>
+* { box-sizing: border-box; }
+html, body { width: 100%; margin: 0; }
+body {
+  --label: #000;
+  --secondary-label: rgba(60, 60, 67, .6);
+  --card-border: rgba(0, 0, 0, .05);
+  --image-placeholder: rgba(254, 255, 255, .7);
+  --grouped-fill: rgba(242, 242, 247, .382);
+  --collage-fill: #fff;
+  --texture-overlay: rgba(255, 255, 255, .85);
+  --texture-opacity: .8;
+  color: var(--label);
+  font: 13px -apple-system, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  body {
+    --label: #fff;
+    --secondary-label: rgba(235, 235, 245, .6);
+    --card-border: rgba(255, 255, 255, .1);
+    --image-placeholder: rgba(31, 31, 31, .2);
+    --grouped-fill: rgba(28, 28, 30, .382);
+    --collage-fill: rgba(34, 34, 34, .85);
+    --texture-overlay: rgba(0, 0, 0, .85);
+    --texture-opacity: .5;
+  }
+}
+#frame { position: relative; width: 100%; height: 180px; overflow: hidden; }
+main { position: relative; width: 100%; height: 100%; overflow: hidden; }
+img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.art { position: relative; overflow: hidden; background: var(--image-placeholder); }
+.art::after { position: absolute; inset: 0; content: ""; border: 1px solid var(--card-border); border-radius: inherit; pointer-events: none; }
+img:not([src]) { visibility: hidden; }
+h1, h2, p { margin: 0; }
+h1, h2, .title, .meta { overflow: hidden; text-overflow: ellipsis; }
+.title, .meta { white-space: nowrap; }
+.title { font-size: 13px; font-weight: 600; }
+.meta { margin-top: 5px; color: var(--secondary-label); font-size: 11px; }
+button { border: 0; padding: 0; cursor: pointer; color: inherit; background: transparent; font: inherit; text-align: inherit; }
+button:focus { outline: 2px solid white; outline-offset: -3px; }
+button:disabled { cursor: default; }
+.hit { position: absolute; inset: 0; width: 100%; height: 100%; }
+.empty { position: absolute; inset: 0; padding: 12px; color: var(--secondary-label); }
+body.tv .title { font-size: 26px; }
+body.tv .meta { font-size: 20px; }
+
+.rail { position: relative; width: 100%; height: 100%; }
+.rail-art { position: absolute; inset: 0 0 auto; border-radius: 12px; }
+.poster .rail-copy { text-align: center; }
+.rail-copy .title, .person-copy .title { font-weight: 400; }
+.rail-copy { position: absolute; left: 0; right: 0; }
+.tv .watch .rail-art { border-radius: 20px; }
+.edge { position: absolute; inset: 0; border-radius: 20px; }
+.card-surface .edge { border-radius: inherit; }
+.title-logo { position: absolute; left: 12px; top: 12px; width: 25%; height: calc(100% - 24px); object-fit: contain; }
+.title-logo:not([src]) { display: none; }
+.feature-art { position: absolute; inset: 0; border-radius: 13px; }
+.feature-shade { position: absolute; inset: 0; background: linear-gradient(25deg, #000e 0%, transparent 79%); }
+.feature-copy { color: #fff; position: absolute; left: 4.65%; right: 4.65%; top: 53%; }
+#rating { color: #ffc700; font-weight: 600; }
+.feature-copy .title { margin-top: 2px; font-size: 20px; }
+.feature-copy .meta { color: rgba(255, 255, 255, .5); margin-top: 3px; font-size: 12px; }
+.watch-time { color: #fff; position: absolute; bottom: 18px; left: 10px; right: 10px; font-size: 13px; }
+.watch-bar { position: absolute; left: 10px; right: 10px; bottom: 10px; height: 2px; background: #ffffff55; border-radius: 5px; overflow: hidden; }
+.watch-fill { height: 100%; background: white; }
+.person-art { position: relative; overflow: hidden; border-radius: 50%; background: #323846; text-align: center; }
+.person-art span { position: absolute; top: 31%; left: 0; right: 0; font-size: 2em; }
+.person-art img { position: absolute; inset: 0; }
+.person-copy { text-align: center; margin-top: 10px; }
+.wall { display: flex; flex-direction: column; }
+.wall .entry { position: relative; flex: 1; min-height: 0; }
+.wall .art { height: 100%; border-radius: 5px; }
+
+body.mac #frame > main { transition: transform 150ms ease-out; }
+body.mac #frame > main.is-hovered { transform: scale(1.03); }
+</style>
+</head>
+<body>
+<div id="frame">
+<main id="content"><div class="rail poster"><div class="art rail-art" id="art"><img id="cover" alt=""></div><div class="rail-copy" id="copy"><p class="title" id="title"></p><p class="meta" id="meta"></p></div><button type="button" class="hit" id="open" aria-label="打开"></button></div></main>
+<p id="empty" class="empty">正在载入…</p>
+</div>
+<script>
+(function () {
+  var api = window.RexWidget;
+  if (!api) return;
+
+  function node(id) { return document.getElementById(id); }
+
+  // Keep the same hover state when the pointer crosses descendants of a card.
+  var hoveredCard = null;
+  var hoveredEntry = null;
+  var tracksHover = false;
+  function setHover(target) {
+    var card = target && target.closest ? target.closest('#content') : null;
+    var entry = card ? target.closest('.entry, .tile') : null;
+    if (card !== hoveredCard) {
+      if (hoveredCard) hoveredCard.classList.remove('is-hovered');
+      if (card) card.classList.add('is-hovered');
+      hoveredCard = card;
+    }
+    if (entry !== hoveredEntry) {
+      if (hoveredEntry) hoveredEntry.classList.remove('is-hovered');
+      if (entry) entry.classList.add('is-hovered');
+      hoveredEntry = entry;
+    }
+  }
+
+  function pointerOver(event) { setHover(event.target); }
+  function pointerOut(event) { setHover(event.relatedTarget); }
+
+  function trackHover(enabled) {
+    if (tracksHover === enabled) return;
+    tracksHover = enabled;
+    if (enabled) {
+      document.addEventListener('pointerover', pointerOver);
+      document.addEventListener('pointerout', pointerOut);
+    } else {
+      document.removeEventListener('pointerover', pointerOver);
+      document.removeEventListener('pointerout', pointerOut);
+      setHover(null);
+    }
+  }
+
+  function updateText(id, value) {
+    var element = node(id);
+    if (element) element.textContent = value == null ? '' : String(value);
+  }
+
+  function updateImage(id, image) {
+    var element = node(id);
+    if (!element) return;
+    if (image) element.setAttribute('src', image);
+    else element.removeAttribute('src');
+  }
+
+  function poster(item) {
+    return item && (item.posterPath || item.detailPoster || item.coverUrl);
+  }
+
+  function backdrop(item) {
+    return item && (item.backdropPath || (item.backdropPaths || [])[0] || poster(item));
+  }
+
+  function year(item) {
+    return item.releaseDate ? String(item.releaseDate).slice(0, 4) : '';
+  }
+
+  function metadata(item) {
+    return [year(item), (item.genreTitle || '').replace(/ · /g, ' / ')].filter(Boolean).join(' · ');
+  }
+
+  function action(id, target, item, label) {
+    var button = node(id);
+    if (!button) return;
+    button.disabled = !api.canOpen || !api.canOpen(target, item && item.id);
+    button.setAttribute('aria-label', label);
+    button.onclick = function () {
+      if (!button.disabled) api.open(target, item && item.id).catch(function () {});
+    };
+  }
+
+  function render() {
+    var snapshot = api.content;
+    var items = snapshot && snapshot.items ? snapshot.items : [];
+    var layout = api.layout || {};
+    var state = api.state || {};
+    var selected = items[state.index] || items[0];
+    var width = layout.width || 180;
+    var height = layout.height || 180;
+    var tv = layout.platform === 'tvos';
+    // The native viewport follows flow content. Anchor it to the host's
+    // height before resolving percentage children or showing the empty state.
+    node('frame').style.height = height + 'px';
+    var mac = String(layout.platform).toLowerCase() === 'macos';
+    trackHover(mac && Boolean(selected));
+    var classes = [tv ? 'tv' : '', mac ? 'mac' : '', state.nativeSymbols ? 'native' : '', state.nativeFrame ? 'native-frame' : ''];
+    document.body.setAttribute('class', classes.join(' '));
+    var outerRadius = state.nativeFrame ? 0 : (layout.cornerRadius > 0 ? layout.cornerRadius : 20);
+    node('content').style.setProperty('--outer-radius', outerRadius + 'px');
+    var heading = document.querySelector(".heading");
+    if (heading && state.templateTitle) heading.textContent = state.templateTitle;
+    node('content').style.display = selected ? '' : 'none';
+    node('empty').style.display = selected ? 'none' : '';
+    updateText('empty', snapshot ? '暂无内容' : '正在载入…');
+    if (!selected) return;
+
+
+    var imageHeight = Math.min(height, width * 1.5);
+    node('art').style.height = imageHeight + 'px';
+    node('copy').style.top = imageHeight + (tv ? 10 : 8) + 'px';
+    updateImage('cover', poster(selected));
+    updateText('title', selected.title);
+    updateText('meta', year(selected));
+    action('open', 'item', selected, selected.title);
+  }
+
+  api.onContentChanged(render);
+  if (api.onArtworkChanged) api.onArtworkChanged(render);
+  api.onLayoutChanged(render);
+  api.onStateChanged(render);
+  render();
+})();
+</script>
+</body>
+</html>
