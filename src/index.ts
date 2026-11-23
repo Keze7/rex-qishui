@@ -1,10 +1,14 @@
+import { logout } from "./account";
 import {
   handleAlbumSection,
   handleArtists,
   handleDetail,
   handleFeedPreference,
+  handleLogin,
+  handleMyPlaylists,
   handlePlaylistSection,
   handleRecommend,
+  handleRecentPlayed,
   handleScenes,
   handleSearch,
   handleSubtitle,
@@ -24,7 +28,7 @@ WidgetMetadata = {
   id: "qishui.music",
   title: process.env.NODE_ENV === "production" ? "汽水音乐" : "汽水音乐 (测试)",
   description:
-    "汽水音乐插件，基于车机开放接口：每日推荐、新歌、猜你喜欢、专辑、歌单、场景、歌手、搜索、播放与时间轴歌词。免费曲目可完整播放，会员曲目只有试听片段",
+    "汽水音乐插件，基于车机开放接口：扫码登录后可用我的歌单与最近播放，另有每日推荐、新歌、猜你喜欢、专辑、歌单、场景、歌手、搜索、播放与时间轴歌词。免费曲目可完整播放，会员曲目只有试听片段",
   author: "self-hosted",
   version: widgetVersion,
   requiredVersion: "0.0.7",
@@ -32,6 +36,22 @@ WidgetMetadata = {
   continuousPlay: true,
   detailCacheDuration: 5,
   modules: [
+    {
+      id: "myPlaylists",
+      title: "我的歌单",
+      subtitle: "账号里的自建与收藏歌单",
+      type: "video",
+      functionName: "loadMyPlaylists",
+      cacheDuration: 120,
+    },
+    {
+      id: "recentPlayed",
+      title: "最近播放",
+      subtitle: "汽水音乐里最近听过的歌",
+      type: "video",
+      functionName: "loadRecentPlayed",
+      cacheDuration: 60,
+    },
     {
       id: "daily",
       title: "每日推荐",
@@ -105,6 +125,14 @@ WidgetMetadata = {
       cacheDuration: 86400,
     },
     {
+      id: "login",
+      title: "登录",
+      subtitle: "扫码登录汽水音乐账号",
+      type: "video",
+      functionName: "loadLogin",
+      cacheDuration: 0,
+    },
+    {
       id: "loadSubtitle",
       title: "歌词",
       subtitle: "汽水音乐时间轴歌词（原文 / 译文 / 双语）",
@@ -134,6 +162,17 @@ WidgetMetadata = {
       },
     ],
   },
+};
+
+loadLogin = async () => handleLogin();
+
+loadMyPlaylists = async () => handleMyPlaylists();
+
+loadRecentPlayed = async () => handleRecentPlayed();
+
+logoutAccount = async () => {
+  logout();
+  return { message: "已退出登录", refresh: true };
 };
 
 loadScenes = async () => handleScenes();

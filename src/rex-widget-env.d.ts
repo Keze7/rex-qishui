@@ -4,6 +4,38 @@ declare namespace QishuiMusic {
     }
 }
 
+//#region myPlaylists
+/** Params of 我的歌单 */
+interface LoadMyPlaylistsParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 我的歌单 */
+interface LoadMyPlaylistsReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 我的歌单
+ * @description 账号里的自建与收藏歌单
+ */
+declare let loadMyPlaylists: (params: LoadMyPlaylistsParams) => LoadMyPlaylistsReturnType | Promise<LoadMyPlaylistsReturnType>;
+//#endregion myPlaylists
+
+//#region recentPlayed
+/** Params of 最近播放 */
+interface LoadRecentPlayedParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 最近播放 */
+interface LoadRecentPlayedReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 最近播放
+ * @description 汽水音乐里最近听过的歌
+ */
+declare let loadRecentPlayed: (params: LoadRecentPlayedParams) => LoadRecentPlayedReturnType | Promise<LoadRecentPlayedReturnType>;
+//#endregion recentPlayed
+
 //#region daily
 /** Params of 每日推荐 */
 interface LoadDailyParams extends QishuiMusic.GlobalParams, VideoListParams {
@@ -147,6 +179,22 @@ interface LoadArtistsReturnType extends Array<VideoItem> {
  */
 declare let loadArtists: (params: LoadArtistsParams) => LoadArtistsReturnType | Promise<LoadArtistsReturnType>;
 //#endregion artists
+
+//#region login
+/** Params of 登录 */
+interface LoadLoginParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 登录 */
+interface LoadLoginReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 登录
+ * @description 扫码登录汽水音乐账号
+ */
+declare let loadLogin: (params: LoadLoginParams) => LoadLoginReturnType | Promise<LoadLoginReturnType>;
+//#endregion login
 
 //#region loadSubtitle
 /** Params of 歌词 */

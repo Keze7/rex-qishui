@@ -1,5 +1,6 @@
 import {
   type AlbumRef,
+  type Json,
   type ArtistRef,
   type TrackRef,
   albumDetail,
@@ -20,6 +21,7 @@ import {
   trackEntity,
   trackRef,
 } from "./api";
+import { accountPlaylistTracks, checkLogin, getAccount, myPlaylists, myRecentPlayed, pendingLogin, startLogin } from "./account";
 
 const LINK_PREFIX = "qishui:";
 
@@ -45,12 +47,14 @@ export function albumLink(id: string): string {
 
 export function parseLink(
   link: string,
-): { kind: "track" | "playlist" | "scene" | "artist" | "album"; id: string; ownerId: string } | null {
+): { kind: "track" | "playlist" | "scene" | "artist" | "album" | "login"; id: string; ownerId: string } | null {
   const raw = String(link ?? "").trim();
   if (!raw.startsWith(LINK_PREFIX)) return null;
   const [kind, id, ownerId = ""] = raw.slice(LINK_PREFIX.length).split(":");
   if (!id || !/^\d{1,30}$/.test(id)) return null;
-  if (kind === "track" || kind === "scene" || kind === "artist" || kind === "album") return { kind, id, ownerId: "" };
+  if (kind === "track" || kind === "scene" || kind === "artist" || kind === "album" || kind === "login") {
+    return { kind, id, ownerId: "" };
+  }
   if (kind === "playlist") return { kind, id, ownerId };
   return null;
 }
@@ -183,7 +187,8 @@ function toRexPlaylist(row: Json): VideoItem {
   const base = row.base_info ?? {};
   const cover = formatCover(row.display_info?.url_cover);
   const collected = formatCount(Number(row.stats?.count_collected ?? 0));
-  const count = Number(row.resource_cnt ?? 0);
+  // 搜索结果是数字，账号歌单是对象 { track_cnt, media_count }
+  const count = typeof row.resource_cnt === "number" ? row.resource_cnt : Number(row.resource_cnt?.track_cnt ?? 0);
   const subtitle = [collected ? `${collected} 收藏` : "", count ? `${count} 首` : ""].filter(Boolean).join(" · ");
   return {
     id: `playlist-${base.id}`,
@@ -271,7 +276,18 @@ export async function handleSearch(params: { keyword?: string; kind?: string; pa
 }
 
 async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoItem> {
-  const { playlist, entities } = await playlistTracks(id, ownerId);
+  let result;
+  try {
+    result = await playlistTracks(id, ownerId);
+  } catch (error) {
+    // 收藏来的歌单（type 2）匿名接口报「记录不存在」，有账号时用票据再试一次；
+    // 该接口不接受账号票据（28001003），所以这类歌单最终仍可能打不开。
+    if (!getAccount()) throw new Error("这个歌单打不开：车机接口只开放自建与抖音收藏的歌单");
+    result = await accountPlaylistTracks(id, ownerId).catch(() => {
+      throw new Error("这个歌单打不开：车机接口不给收藏来的歌单");
+    });
+  }
+  const { playlist, entities } = result;
   const tracks = entities.map((entity) => toRexTrack(trackRef(entity)));
   const base = playlist?.base_info ?? {};
   const cover = formatCover(playlist?.display_info?.url_cover);
@@ -322,6 +338,7 @@ export async function handleDetail(link: string): Promise<VideoItem> {
   if (parsed.kind === "scene") return handleSceneDetail(parsed.id);
   if (parsed.kind === "artist") return loadArtistDetail(parsed.id);
   if (parsed.kind === "album") return loadAlbumDetail(parsed.id);
+  if (parsed.kind === "login") return (await handleLogin())[0];
   return loadPlaylistDetail(parsed.id, parsed.ownerId);
 }
 
@@ -422,6 +439,88 @@ function base64EncodeUtf8(text: string): string {
 
 export function toLrcDataUri(lrc: string): string {
   return `data:text/plain;charset=utf-8;base64,${base64EncodeUtf8(lrc)}`;
+}
+
+const LOGIN_LINK = `${LINK_PREFIX}login:0`;
+
+function toRexAccount(account: { nickname: string; userId: string; vip: boolean; avatar: string }): VideoItem {
+  const subtitle = [account.vip ? "VIP" : "普通账号", account.userId].filter(Boolean).join(" · ");
+  return {
+    id: "my-account",
+    type: "url",
+    link: LOGIN_LINK,
+    title: `已登录：${account.nickname || account.userId}`,
+    ...(subtitle ? { subtitle } : {}),
+    description: "长按这一条可以退出登录。登录态只保存在本机。",
+    ...(account.avatar ? { posterPath: account.avatar, coverUrl: account.avatar } : {}),
+    actions: [{ id: "logout", title: "退出登录", functionName: "logoutAccount" }],
+  };
+}
+
+function noticeItem(title: string, subtitle?: string, description?: string): VideoItem {
+  return {
+    id: "my-notice",
+    type: "url",
+    link: LOGIN_LINK,
+    title,
+    ...(subtitle ? { subtitle } : {}),
+    ...(description ? { description } : {}),
+  };
+}
+
+function toRexQr(image: string, title: string): VideoItem {
+  return {
+    id: "login-qr",
+    type: "url",
+    link: LOGIN_LINK,
+    title,
+    subtitle: "扫码并在手机上确认后，回到首页下拉刷新",
+    description: "二维码 5 分钟内有效。登录态只保存在本机，不会上传到任何服务器。",
+    posterPath: image,
+    coverUrl: image,
+  };
+}
+
+/** 未登录时点一下就进登录分区 */
+function loginPrompt(): VideoItem {
+  return noticeItem("点这里登录汽水音乐", "登录后才会显示账号里的歌单", "汽水音乐的账号数据要扫码授权才能读，接口不给匿名访问。");
+}
+
+export async function handleLogin(): Promise<VideoItem[]> {
+  const account = getAccount();
+  if (account) return [toRexAccount(account)];
+  const pending = pendingLogin();
+  if (pending) {
+    const result = await checkLogin().catch(() => ({ state: "waiting" as const }));
+    if (result.state === "done" && result.account) return [toRexAccount(result.account)];
+    if (result.state !== "expired") {
+      return [toRexQr(pending.image, result.state === "scanned" ? "已扫码，请在手机上点确认" : "用汽水音乐 App 扫码登录")];
+    }
+  }
+  const ticket = await startLogin();
+  return [toRexQr(ticket.image, "用汽水音乐 App 扫码登录")];
+}
+
+export async function handleMyPlaylists(count = 50): Promise<VideoItem[]> {
+  if (!getAccount()) return [loginPrompt()];
+  try {
+    const rows = await myPlaylists(count);
+    if (!rows.length) return [noticeItem("还没有歌单", "账号里没有自建或收藏的歌单")];
+    return rows.map(toRexPlaylist);
+  } catch (error) {
+    return [noticeItem("歌单读取失败", String((error as Error).message ?? error).slice(0, 90))];
+  }
+}
+
+export async function handleRecentPlayed(count = 50): Promise<VideoItem[]> {
+  if (!getAccount()) return [loginPrompt()];
+  try {
+    const entities = await myRecentPlayed(count);
+    if (!entities.length) return [noticeItem("还没有播放记录", "在汽水音乐里听几首歌再回来")];
+    return entities.map((entity) => toRexTrack(trackRef(entity)));
+  } catch (error) {
+    return [noticeItem("最近播放读取失败", String((error as Error).message ?? error).slice(0, 90))];
+  }
 }
 
 export async function handleSubtitle(params: { id?: string; link?: string }): Promise<SubtitleItem[]> {
