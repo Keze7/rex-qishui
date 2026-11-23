@@ -189,7 +189,8 @@ export async function feedModes(): Promise<Array<{ id: string; name: string; gro
   );
 }
 
-export async function feedTracks(scene: string, count = 30): Promise<Json[]> {
+/** scene 传 null 时不限定场景，拿到的是通用推荐流 */
+export async function feedTracks(scene: string | null, count = 30): Promise<Json[]> {
   const data = await platform<Json>("/feed/song-tab/", {
     played_media: [],
     is_first_request: true,
@@ -197,8 +198,8 @@ export async function feedTracks(scene: string, count = 30): Promise<Json[]> {
     is_did_first_request: false,
     count,
     feed_preference: {
-      scene_mode_id: Number(scene),
-      scene_mode_select_time: Date.now(),
+      scene_mode_id: scene == null ? null : Number(scene),
+      scene_mode_select_time: scene == null ? null : Date.now(),
       preference_mode: null,
       total_request_count: 1,
       preference_mode_request_count: 1,

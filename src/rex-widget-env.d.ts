@@ -4,17 +4,65 @@ declare namespace QishuiMusic {
     }
 }
 
+//#region recommend
+/** Params of 推荐歌曲 */
+interface LoadRecommendParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 推荐歌曲 */
+interface LoadRecommendReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 推荐歌曲
+ * @description 按你的口味挑的 30 首
+ */
+declare let loadRecommend: (params: LoadRecommendParams) => LoadRecommendReturnType | Promise<LoadRecommendReturnType>;
+//#endregion recommend
+
+//#region hot
+/** Params of 热歌歌单 */
+interface LoadHotPlaylistsParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 热歌歌单 */
+interface LoadHotPlaylistsReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 热歌歌单
+ * @description 抖音热门与流行合集
+ */
+declare let loadHotPlaylists: (params: LoadHotPlaylistsParams) => LoadHotPlaylistsReturnType | Promise<LoadHotPlaylistsReturnType>;
+//#endregion hot
+
+//#region classic
+/** Params of 华语经典 */
+interface LoadClassicPlaylistsParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 华语经典 */
+interface LoadClassicPlaylistsReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 华语经典
+ * @description 黄金年代的百首老歌
+ */
+declare let loadClassicPlaylists: (params: LoadClassicPlaylistsParams) => LoadClassicPlaylistsReturnType | Promise<LoadClassicPlaylistsReturnType>;
+//#endregion classic
+
 //#region scenes
-/** Params of 发现 */
+/** Params of 场景电台 */
 interface LoadScenesParams extends QishuiMusic.GlobalParams, VideoListParams {
 }
 
-/** Return Type of 发现 */
+/** Return Type of 场景电台 */
 interface LoadScenesReturnType extends Array<VideoItem> {
 }
 
 /**
- * 发现
+ * 场景电台
  * @description 按心情与场景推荐
  */
 declare let loadScenes: (params: LoadScenesParams) => LoadScenesReturnType | Promise<LoadScenesReturnType>;

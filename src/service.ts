@@ -88,26 +88,33 @@ export async function handleSceneDetail(id: string): Promise<VideoItem> {
   };
 }
 
+/** 通用推荐流，不绑定场景 */
+export async function handleRecommend(): Promise<VideoItem[]> {
+  const entities = await feedTracks(null, 30);
+  return entities.map((entity) => toRexTrack(trackRef(entity)));
+}
+
+/** 按关键词取一组歌单，用作首页分区（车机接口没有官方运营位） */
+export async function handlePlaylistSection(keyword: string, count = 10): Promise<VideoItem[]> {
+  const rows = await searchPlaylists(keyword, count);
+  return rows.map((row) => {
+    const base = row.base_info ?? {};
+    const cover = formatCover(row.display_info?.url_cover);
+    return {
+      id: `playlist-${base.id}`,
+      type: "url",
+      mediaType: "playlist",
+      link: playlistLink(String(base.id), String(base.owner_id ?? "")),
+      title: String(base.title ?? base.name ?? "歌单"),
+      ...(cover ? { posterPath: cover, coverUrl: cover } : {}),
+    };
+  });
+}
+
 export async function handleSearch(params: { keyword?: string; kind?: string; page?: string }): Promise<VideoItem[]> {
   const keyword = String(params.keyword ?? "").trim();
   if (!keyword) return [];
-  if (params.kind === "playlists") {
-    const rows = await searchPlaylists(keyword, 30);
-    return rows.map((row) => {
-      const base = row.base_info ?? {};
-      const cover = formatCover(row.display_info?.url_cover);
-      const count = Number(row.resource_cnt ?? 0);
-      return {
-        id: `playlist-${base.id}`,
-        type: "url",
-        mediaType: "playlist",
-        link: playlistLink(String(base.id), String(base.owner_id ?? "")),
-        title: String(base.title ?? base.name ?? "歌单"),
-        ...(count ? { subtitle: `${count} 首` } : {}),
-        ...(cover ? { posterPath: cover, coverUrl: cover } : {}),
-      };
-    });
-  }
+  if (params.kind === "playlists") return handlePlaylistSection(keyword, 30);
   const entities = await searchTracks(keyword, 40);
   return entities.map((entity) => toRexTrack(trackRef(entity)));
 }

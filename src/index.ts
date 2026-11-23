@@ -1,4 +1,11 @@
-import { handleDetail, handleScenes, handleSearch, handleSubtitle } from "./service";
+import {
+  handleDetail,
+  handlePlaylistSection,
+  handleRecommend,
+  handleScenes,
+  handleSearch,
+  handleSubtitle,
+} from "./service";
 
 const widgetVersion = (() => {
   if (process.env.NODE_ENV === "production") {
@@ -23,8 +30,32 @@ WidgetMetadata = {
   detailCacheDuration: 5,
   modules: [
     {
+      id: "recommend",
+      title: "推荐歌曲",
+      subtitle: "按你的口味挑的 30 首",
+      type: "video",
+      functionName: "loadRecommend",
+      cacheDuration: 300,
+    },
+    {
+      id: "hot",
+      title: "热歌歌单",
+      subtitle: "抖音热门与流行合集",
+      type: "video",
+      functionName: "loadHotPlaylists",
+      cacheDuration: 3600,
+    },
+    {
+      id: "classic",
+      title: "华语经典",
+      subtitle: "黄金年代的百首老歌",
+      type: "video",
+      functionName: "loadClassicPlaylists",
+      cacheDuration: 3600,
+    },
+    {
       id: "scenes",
-      title: "发现",
+      title: "场景电台",
       subtitle: "按心情与场景推荐",
       type: "video",
       functionName: "loadScenes",
@@ -60,6 +91,12 @@ WidgetMetadata = {
 };
 
 loadScenes = async () => handleScenes();
+
+loadRecommend = async () => handleRecommend();
+
+loadHotPlaylists = async () => handlePlaylistSection("热歌", 10);
+
+loadClassicPlaylists = async () => handlePlaylistSection("经典老歌", 10);
 
 loadSubtitle = async (params) => handleSubtitle(params);
 
