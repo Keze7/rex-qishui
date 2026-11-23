@@ -23,7 +23,7 @@ BUNDLE_ID = "qishui.music"
 # (行 id, 标题, style, gridSize, functionId, htmlTemplate)
 # 一行一个样：大卡 → 两列列表 → 压字方卡 → 两列列表 → 榜单小卡 → 两列列表 → 压字方卡 → 圆头像
 ROWS = [
-    ("home-daily", "每日推荐", "cover", [-1, 2.3], "loadDaily", "hero-daily.html"),
+    ("home-daily", "每日推荐", "cover", [-1, 1.8], "loadDaily", "hero-daily.html"),
     ("home-recent", "最近播放", "cover", [-1, 3.0], "loadRecentPlayed", "list-grid.html"),
     ("home-familiar", "猜你喜欢", "fullWidthPoster", [-1, 1.8], "loadFamiliar", "tile-rail.html"),
     ("home-fresh", "新歌速递", "cover", [-1, 3.0], "loadFresh", "list-grid.html"),

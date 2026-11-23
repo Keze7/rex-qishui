@@ -59,7 +59,7 @@ Rex 跑在 iOS 的 JavaScriptCore 里，**没有 `node:crypto`**，也没有 Web
 
 | 行 | 卡片 | 尺寸声明 |
 | --- | --- | --- |
-| 每日推荐 | `hero-daily.html` | `type=full-width; height=190`，封面取色铺底 |
+| 每日推荐 | `hero-daily.html` | `type=full-width; height=150`，封面取色铺底 |
 | 最近播放 / 新歌速递 / 热歌歌单 | `list-grid.html` | `type=full-width; height=248`，两列 × 四行 = 8 首 |
 | 猜你喜欢 / 热门专辑 | `tile-rail.html` | `type=rail; height=150; item-ratio=4:5`，压字方卡 |
 | 场景电台 | `chip-rail.html` | `type=rail; height=96; item-ratio=1:1`，榜单小卡 |
