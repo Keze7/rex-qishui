@@ -53,6 +53,26 @@ Rex 跑在 iOS 的 JavaScriptCore 里，**没有 `node:crypto`**，也没有 Web
 
 同一份代码在 JSC 里没有 `TextEncoder` / `URLSearchParams` / `atob`，全部手写。
 
+## 首页
+
+`home/qishui-home.rex` 是一套 8 行的 HTML 首页，卡片在 `home/templates/`：
+
+| 行 | 卡片 | 尺寸声明 |
+| --- | --- | --- |
+| 每日推荐 | `hero-daily.html` | `type=full-width; height=176` |
+| 最近播放 / 新歌速递 / 猜你喜欢 / 场景电台 / 热歌歌单 / 热门专辑 | `track-rail.html` | `type=rail; height=286; item-ratio=3:4` |
+| 热门歌手 | `artist-rail.html` | 同上，圆形头像 |
+
+改完模板跑 `python scripts/build-home.py`（默认把 `widgetURL` 钉在当前 git HEAD 的 jsDelivr 地址）。
+导入方式：Rex → 首页 → 导入首页列表 → 粘贴下面的直链。
+
+```
+https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@855de1a/home/qishui-home.rex
+```
+
+`rex-layout.json` 里每张卡片的 `widgetBundleId` 必须是 `WidgetMetadata.id`（`qishui.music`），
+`functionId` 是插件导出的函数名（`loadDaily` 等）；留空则行能显示但没有数据。
+
 ## 已知限制
 
 - **没有榜单与运营位**。首页轮播、飙升榜这类内容属于汽水 App 的运营接口，需要 Argus 签名，车机通道拿不到。
