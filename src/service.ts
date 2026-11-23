@@ -278,16 +278,34 @@ export async function handleSearch(params: { keyword?: string; kind?: string; pa
 }
 
 async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoItem> {
-  let result;
-  try {
-    result = await playlistTracks(id, ownerId);
-  } catch (error) {
-    // 收藏来的歌单（type 2）匿名接口报「记录不存在」，有账号时用票据再试一次；
-    // 该接口不接受账号票据（28001003），所以这类歌单最终仍可能打不开。
-    if (!getAccount()) throw new Error("这个歌单打不开：车机接口只开放自建与抖音收藏的歌单");
-    result = await accountPlaylistTracks(id, ownerId).catch(() => {
-      throw new Error("这个歌单打不开：车机接口不给收藏来的歌单");
-    });
+  // 匿名接口对部分歌单会报「记录不存在」，账号接口又不认收藏来的歌单（28001003）。
+  // 这里把几种走法依次试一遍，全挂就把各家错误摊在详情页上，方便定位。
+  const tries: Array<[string, () => Promise<{ playlist?: Json; entities: Json[] }>]> = [["匿名", () => playlistTracks(id, ownerId)]];
+  if (ownerId) tries.push(["匿名·无作者", () => playlistTracks(id, "")]);
+  const account = getAccount();
+  if (account) {
+    tries.push(["账号票据", () => accountPlaylistTracks(id, ownerId)]);
+    if (account.userId && account.userId !== ownerId) {
+      tries.push(["账号票据·本人", () => accountPlaylistTracks(id, account.userId)]);
+    }
+  }
+
+  const errors: string[] = [];
+  let result: { playlist?: Json; entities: Json[] } | null = null;
+  for (const [label, run] of tries) {
+    try {
+      const attempt = await run();
+      if (attempt.playlist || attempt.entities.length) {
+        result = attempt;
+        break;
+      }
+      errors.push(`${label}:空结果`);
+    } catch (error) {
+      errors.push(`${label}:${String((error as Error)?.message ?? error)}`);
+    }
+  }
+  if (!result) {
+    return noticeItem("这个歌单打不开", `id ${id}`, `接口反馈：${errors.join(" / ").slice(0, 220)}`);
   }
   const { playlist, entities } = result;
   const tracks = entities.map((entity) => toRexTrack(trackRef(entity)));
