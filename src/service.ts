@@ -283,11 +283,12 @@ const uniqueStr = (list: string[]) => list.filter((value, index) => list.indexOf
  * 匿名读不到时，从账号里的歌单行挖其他 id / 作者再试一轮：
  * 收藏来的歌单，行里的 id 可能只是「收藏记录 id」，真正的 playlist id 或原作者在别的字段里。
  */
-async function minePlaylistRow(id: string): Promise<{ ids: string[]; owners: string[]; keys: string[] }> {
-  if (!getAccount()) return { ids: [], owners: [], keys: [] };
+async function minePlaylistRow(id: string): Promise<{ ids: string[]; owners: string[]; keys: string[]; dump: string }> {
+  const empty = { ids: [] as string[], owners: [] as string[], keys: [] as string[], dump: "" };
+  if (!getAccount()) return empty;
   const rows = await myPlaylists(50).catch(() => [] as Json[]);
   const row = rows.find((item) => String(item.base_info?.id ?? "") === id);
-  if (!row) return { ids: [], owners: [], keys: [] };
+  if (!row) return empty;
   const ids: string[] = [];
   const owners: string[] = [];
   const walk = (node: any, key: string, depth: number) => {
@@ -307,6 +308,7 @@ async function minePlaylistRow(id: string): Promise<{ ids: string[]; owners: str
     ids: uniqueStr(ids.filter((value) => value !== id)).slice(0, 3),
     owners: uniqueStr(owners.filter((value) => value !== id)).slice(0, 3),
     keys: Object.keys(row.base_info ?? {}),
+    dump: JSON.stringify(row.base_info ?? row).slice(0, 420),
   };
 }
 
@@ -328,11 +330,13 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
   const run = async (label: string, task: () => Promise<{ playlist?: Json; entities: Json[] }>) => {
     try {
       const attempt = await task();
-      if (attempt.playlist || attempt.entities.length) {
+      // 只有拿到曲目才算成功：部分歌单会返回元数据但 0 首（导入进来的歌单），
+      // 这种进详情页会变成空页 + 重试，不如当成失败继续换走法。
+      if (attempt.entities.length) {
         result = attempt;
         return true;
       }
-      errors.push(`${label}:空结果`);
+      errors.push(`${label}:${attempt.playlist ? "0 首" : "空结果"}`);
     } catch (error) {
       errors.push(`${label}:${String((error as Error)?.message ?? error)}`);
     }
@@ -341,10 +345,12 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
   for (const [label, task] of tries) if (await run(label, task)) break;
 
   let rowKeys: string[] = [];
+  let rowDump = "";
   if (!result) {
     // 换 id / 换作者再试：只在前面的走法全挂后才跑，正常歌单不受影响
     const mined = await minePlaylistRow(id);
     rowKeys = mined.keys;
+    rowDump = mined.dump;
     let budget = 6;
     for (const candidateId of [id, ...mined.ids]) {
       for (const candidateOwner of uniqueStr([ownerId, ...mined.owners])) {
@@ -356,8 +362,8 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
     }
   }
   if (!result) {
-    const fields = rowKeys.length ? ` · 字段:${rowKeys.join(",")}` : "";
-    return noticeItem("这个歌单打不开", `id ${id}`, `接口反馈：${errors.join(" / ").slice(0, 200)}${fields}`);
+    const fields = rowKeys.length ? ` · 字段:${rowKeys.join(",")}` : " · 没取到歌单行";
+    return noticeItem("这个歌单打不开", `id ${id}`, `接口反馈：${errors.join(" / ").slice(0, 180)}${fields}${rowDump ? ` · 行数据:${rowDump}` : ""}`);
   }
   const picked: { playlist?: Json; entities: Json[] } = result;
   const { playlist, entities } = picked;
@@ -382,10 +388,38 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
   };
 }
 
+/** 导入/下架的曲目常常没有播放地址，用「歌名 + 歌手」在汽水里找同名曲兜底 */
+async function fallbackAudio(ref: TrackRef): Promise<{ url: string; preview: boolean } | null> {
+  const keyword = `${ref.name} ${ref.artists[0] ?? ""}`.trim();
+  if (!keyword) return null;
+  const rows = await searchTracks(keyword, 6).catch(() => [] as Json[]);
+  const norm = (text: string) => String(text).replace(/[\s\-—_·.,，。!！?？()（）[\]【】]/g, "").toLowerCase();
+  for (const row of rows) {
+    const alt = trackRef(row);
+    if (norm(alt.name) !== norm(ref.name)) continue;
+    const audio = await resolveAudio(row).catch(() => null);
+    if (audio?.url) return audio;
+  }
+  return null;
+}
+
 async function loadTrackDetail(id: string): Promise<VideoItem> {
-  const entity = await trackEntity(id);
+  let entity: Json;
+  try {
+    entity = await trackEntity(id);
+  } catch (error) {
+    return noticeItem("这首歌打不开", `id ${id}`, String((error as Error)?.message ?? error).slice(0, 100));
+  }
   const ref = trackRef(entity);
-  const audio = await resolveAudio(entity);
+  const audio = (await resolveAudio(entity).catch(() => null)) ?? (await fallbackAudio(ref));
+  if (!audio?.url) {
+    // 不抛错：抛了宿主只会停在「重试」，这里给一条能看懂的原因
+    return {
+      ...toRexTrack(ref),
+      link: trackLink(id),
+      description: "汽水没给这首歌播放地址（导入或已下架），换一首试试。",
+    };
+  }
   const notes = [formatDuration(ref.durationMs), audio.preview ? "仅试听片段" : ""].filter(Boolean).join(" · ");
   return {
     ...toRexTrack(ref),
