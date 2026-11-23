@@ -2,6 +2,14 @@
 
 基于汽水音乐**车机开放接口**的 Rex 音乐插件。匿名 client_token 即可读公开曲库，不需要登录、Cookie，也不需要 Argus / X-Helios 客户端签名。
 
+## 安装地址
+
+Rex 里添加插件，直接填这一行：
+
+```
+https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@main/dist/qishui.js
+```
+
 ## 能力
 
 | 模块 | 说明 |
@@ -36,22 +44,24 @@ node scripts/check.mjs    # 端到端：真实接口跑发现、搜索、详情�
 
 ## 安装到 Rex
 
-`dist/qishui.js` 已提交进仓库，直接用 jsDelivr 分发：
+`dist/qishui.js` 已提交进仓库，用 jsDelivr 分发：
 
 ```
-https://cdn.jsdelivr.net/gh/<用户名>/<仓库名>@main/dist/qishui.js
+https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@main/dist/qishui.js
 ```
 
-也可以在 Rex 里填 raw 地址（没有 CDN 缓存延迟，但国内需代理）：
+raw 备用地址（没有 CDN 缓存延迟，国内需代理）：
 
 ```
-https://raw.githubusercontent.com/<用户名>/<仓库名>/main/dist/qishui.js
+https://raw.githubusercontent.com/Keze7/rex-qishui/main/dist/qishui.js
 ```
 
-推送新版本后 jsDelivr 的 `@main` 有缓存，急着生效就主动刷一下：
+推送新版本后 jsDelivr 的 `@main` 缓存 12 小时，急着生效就主动刷：
 
 ```sh
-curl https://purge.jsdelivr.net/gh/<用户名>/<仓库名>@main/dist/qishui.js
+curl https://purge.jsdelivr.net/gh/Keze7/rex-qishui@main/dist/qishui.js
 ```
 
 想锁死某次发布的版本，把 `@main` 换成 commit 短哈希或 tag，例如 `@v1.0.0`。
+
+> 仓库必须保持公开，jsDelivr 不服务私有仓库。
