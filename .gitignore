@@ -5,3 +5,5 @@ coverage/
 
 # dist 必须提交：Rex 直接加载 dist/qishui.js
 !dist/
+
+home/preview/

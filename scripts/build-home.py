@@ -21,15 +21,16 @@ SCRIPT_URL = "https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@{sha}/dist/qishui.js"
 BUNDLE_ID = "qishui.music"
 
 # (行 id, 标题, style, gridSize, functionId, htmlTemplate)
+# 一行一个样：大卡 → 两列列表 → 压字方卡 → 两列列表 → 榜单小卡 → 两列列表 → 压字方卡 → 圆头像
 ROWS = [
     ("home-daily", "每日推荐", "cover", [-1, 2.3], "loadDaily", "hero-daily.html"),
-    ("home-recent", "最近播放", "fullWidthPoster", [-1, 3.4], "loadRecentPlayed", "track-rail.html"),
-    ("home-fresh", "新歌速递", "fullWidthPoster", [-1, 3.4], "loadFresh", "track-rail.html"),
-    ("home-familiar", "猜你喜欢", "fullWidthPoster", [-1, 3.4], "loadFamiliar", "track-rail.html"),
-    ("home-scenes", "场景电台", "fullWidthPoster", [-1, 3.4], "loadScenes", "track-rail.html"),
-    ("home-hot", "热歌歌单", "fullWidthPoster", [-1, 3.4], "loadHotPlaylists", "track-rail.html"),
-    ("home-albums", "热门专辑", "fullWidthPoster", [-1, 3.4], "loadAlbums", "track-rail.html"),
-    ("home-artists", "热门歌手", "fullWidthPoster", [-1, 3.4], "loadArtists", "artist-rail.html"),
+    ("home-recent", "最近播放", "cover", [-1, 3.0], "loadRecentPlayed", "list-grid.html"),
+    ("home-familiar", "猜你喜欢", "fullWidthPoster", [-1, 1.8], "loadFamiliar", "tile-rail.html"),
+    ("home-fresh", "新歌速递", "cover", [-1, 3.0], "loadFresh", "list-grid.html"),
+    ("home-scenes", "场景电台", "fullWidthPoster", [-1, 1.2], "loadScenes", "chip-rail.html"),
+    ("home-hot", "热歌歌单", "cover", [-1, 3.0], "loadHotPlaylists", "list-grid.html"),
+    ("home-albums", "热门专辑", "fullWidthPoster", [-1, 1.8], "loadAlbums", "tile-rail.html"),
+    ("home-artists", "热门歌手", "fullWidthPoster", [-1, 1.8], "loadArtists", "artist-circle.html"),
 ]
 
 

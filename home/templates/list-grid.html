@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="rex-widget" content="type=full-width; height=248">
+<title>两列曲目列表</title>
+<style>
+*{box-sizing:border-box}
+html,body{width:100%;margin:0;background:transparent}
+body{font:13px/1.3 -apple-system,system-ui,sans-serif;color:#fff}
+@media (prefers-color-scheme:light){body{color:#111}}
+.grid{position:relative;width:100%;height:248px;overflow:hidden}
+.cell{position:absolute;width:50%;height:56px;padding-left:52px;padding-right:10px;overflow:hidden}
+.cell.off{display:none}
+.art{position:absolute;left:0;top:6px;width:44px;height:44px;border-radius:8px;overflow:hidden;background:rgba(128,128,140,.25)}
+.art img{display:block;width:100%;height:100%;object-fit:cover}
+.art img:not([src]){visibility:hidden}
+.title{margin:9px 0 0;font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{margin:4px 0 0;font-size:11px;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (prefers-color-scheme:light){.meta{color:rgba(60,60,67,.6)}}
+.hit{position:absolute;left:0;top:0;width:100%;height:100%;border:0;padding:0;background:transparent;color:transparent;cursor:pointer}
+.hit:focus{outline:2px solid #fff;outline-offset:-2px;border-radius:10px}
+.hit:disabled{cursor:default}
+.tv .cell{height:76px;padding-left:66px}
+.tv .art{width:56px;height:56px}
+.tv .title{font-size:18px}
+.tv .meta{font-size:15px}
+</style>
+</head>
+<body>
+<div class="grid" id="grid">
+  <div class="cell" id="c0"><div class="art"><img id="i0" alt=""></div><p class="title" id="t0"></p><p class="meta" id="m0"></p><button type="button" class="hit" id="b0" aria-label="打开"></button></div>
+  <div class="cell" id="c1"><div class="art"><img id="i1" alt=""></div><p class="title" id="t1"></p><p class="meta" id="m1"></p><button type="button" class="hit" id="b1" aria-label="打开"></button></div>
+  <div class="cell" id="c2"><div class="art"><img id="i2" alt=""></div><p class="title" id="t2"></p><p class="meta" id="m2"></p><button type="button" class="hit" id="b2" aria-label="打开"></button></div>
+  <div class="cell" id="c3"><div class="art"><img id="i3" alt=""></div><p class="title" id="t3"></p><p class="meta" id="m3"></p><button type="button" class="hit" id="b3" aria-label="打开"></button></div>
+  <div class="cell" id="c4"><div class="art"><img id="i4" alt=""></div><p class="title" id="t4"></p><p class="meta" id="m4"></p><button type="button" class="hit" id="b4" aria-label="打开"></button></div>
+  <div class="cell" id="c5"><div class="art"><img id="i5" alt=""></div><p class="title" id="t5"></p><p class="meta" id="m5"></p><button type="button" class="hit" id="b5" aria-label="打开"></button></div>
+  <div class="cell" id="c6"><div class="art"><img id="i6" alt=""></div><p class="title" id="t6"></p><p class="meta" id="m6"></p><button type="button" class="hit" id="b6" aria-label="打开"></button></div>
+  <div class="cell" id="c7"><div class="art"><img id="i7" alt=""></div><p class="title" id="t7"></p><p class="meta" id="m7"></p><button type="button" class="hit" id="b7" aria-label="打开"></button></div>
+</div>
+<script>
+(function () {
+  var api = window.RexWidget;
+  var CAP = 8;
+  function el(id) { return document.getElementById(id); }
+  var items = [];
+
+  function meta(item) {
+    if (!item) return '';
+    if (item.description) return String(item.description);
+    var people = item.peoples || [];
+    for (var i = 0; i < people.length; i++) {
+      if (people[i] && people[i].title) return String(people[i].title);
+    }
+    return item.durationText ? String(item.durationText) : '';
+  }
+
+  function render() {
+    var page = api && api.content;
+    items = page && page.items ? page.items : [];
+    for (var i = 0; i < CAP; i++) {
+      var item = items[i];
+      var cell = el('c' + i);
+      cell.className = item ? 'cell' : 'cell off';
+      cell.style.left = (i % 2 ? '50%' : '0');
+      cell.style.top = Math.floor(i / 2) * 56 + 'px';
+      var img = el('i' + i);
+      var src = item && (item.posterPath || item.detailPoster || item.coverUrl);
+      if (src) img.setAttribute('src', src);
+      else img.removeAttribute('src');
+      el('t' + i).textContent = item ? (item.title || '未命名') : '';
+      el('m' + i).textContent = meta(item);
+      var btn = el('b' + i);
+      btn.disabled = !item || !api.canOpen || !api.canOpen('item', item.id);
+      btn.setAttribute('aria-label', item ? '打开 ' + (item.title || '') : '打开');
+    }
+  }
+
+  function bind(index) {
+    el('b' + index).addEventListener('click', function () {
+      var item = items[index];
+      if (!item || !api) return;
+      api.open('item', item.id).catch(function () {});
+    });
+  }
+  for (var k = 0; k < CAP; k++) bind(k);
+
+  function resize() {
+    var layout = (api && api.layout) || {};
+    var height = layout.height || 248;
+    el('grid').style.height = height + 'px';
+    document.body.className = layout.platform === 'tvos' ? 'tv' : '';
+  }
+
+  if (!api) return;
+  api.onContentChanged(render);
+  api.onLayoutChanged(resize);
+  resize();
+  render();
+})();
+</script>
+</body>
+</html>

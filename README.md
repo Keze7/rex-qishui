@@ -55,13 +55,15 @@ Rex 跑在 iOS 的 JavaScriptCore 里，**没有 `node:crypto`**，也没有 Web
 
 ## 首页
 
-`home/qishui-home.rex` 是一套 8 行的 HTML 首页，卡片在 `home/templates/`：
+`home/qishui-home.rex` 是一套 8 行的 HTML 首页，一行一个样，卡片在 `home/templates/`：
 
 | 行 | 卡片 | 尺寸声明 |
 | --- | --- | --- |
-| 每日推荐 | `hero-daily.html` | `type=full-width; height=176` |
-| 最近播放 / 新歌速递 / 猜你喜欢 / 场景电台 / 热歌歌单 / 热门专辑 | `track-rail.html` | `type=rail; height=286; item-ratio=3:4` |
-| 热门歌手 | `artist-rail.html` | 同上，圆形头像 |
+| 每日推荐 | `hero-daily.html` | `type=full-width; height=190`，封面取色铺底 |
+| 最近播放 / 新歌速递 / 热歌歌单 | `list-grid.html` | `type=full-width; height=248`，两列 × 四行 = 8 首 |
+| 猜你喜欢 / 热门专辑 | `tile-rail.html` | `type=rail; height=150; item-ratio=4:5`，压字方卡 |
+| 场景电台 | `chip-rail.html` | `type=rail; height=96; item-ratio=1:1`，榜单小卡 |
+| 热门歌手 | `artist-circle.html` | `type=rail; height=146; item-ratio=2:3`，圆头像 |
 
 改完模板跑 `python scripts/build-home.py`（默认把 `widgetURL` 钉在当前 git HEAD 的 jsDelivr 地址）。
 导入方式：Rex → 首页 → 导入首页列表 → 粘贴下面的直链。

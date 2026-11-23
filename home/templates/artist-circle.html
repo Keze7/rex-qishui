@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="rex-widget" content="type=rail; height=146; item-ratio=2:3">
+<title>歌手圆头像</title>
+<style>
+*{box-sizing:border-box}
+html,body{width:100%;margin:0;background:transparent}
+body{font:13px/1.3 -apple-system,system-ui,sans-serif;color:#fff}
+@media (prefers-color-scheme:light){body{color:#111}}
+.who{position:relative;width:100%;height:146px;text-align:center;overflow:hidden}
+.art{position:relative;width:84px;height:84px;margin:6px auto 0;border-radius:50%;overflow:hidden;background:rgba(128,128,140,.25)}
+.art::after{position:absolute;inset:0;content:"";border:1px solid rgba(255,255,255,.12);border-radius:inherit;pointer-events:none}
+.art img{display:block;width:100%;height:100%;object-fit:cover}
+.art img:not([src]){visibility:hidden}
+.title{margin:9px 2px 0;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{margin:3px 2px 0;font-size:10.5px;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (prefers-color-scheme:light){.meta{color:rgba(60,60,67,.6)}}
+.hit{position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;background:transparent;color:transparent;cursor:pointer}
+.hit:focus{outline:2px solid #fff;outline-offset:2px;border-radius:14px}
+.hit:disabled{cursor:default}
+.tv .art{width:110px;height:110px}
+.tv .title{font-size:19px}
+.tv .meta{font-size:16px}
+</style>
+</head>
+<body>
+<div class="who" id="who">
+  <div class="art"><img id="cover" alt=""></div>
+  <p class="title" id="title"></p>
+  <p class="meta" id="meta"></p>
+  <button type="button" class="hit" id="open" aria-label="打开" disabled></button>
+</div>
+<script>
+(function () {
+  var api = window.RexWidget;
+  function el(id) { return document.getElementById(id); }
+  var current = null;
+
+  function render() {
+    var page = api && api.content;
+    var items = page && page.items ? page.items : [];
+    current = items[0] || null;
+    var src = current && (current.posterPath || current.detailPoster || current.coverUrl);
+    if (src) el('cover').setAttribute('src', src);
+    else el('cover').removeAttribute('src');
+    el('title').textContent = current ? (current.title || '未命名') : '';
+    el('meta').textContent = current && current.description ? String(current.description) : '歌手';
+    var open = el('open');
+    open.disabled = !current || !api.canOpen || !api.canOpen('person', current.id);
+    open.setAttribute('aria-label', current ? '打开歌手 ' + (current.title || '') : '打开');
+  }
+
+  function resize() {
+    var layout = (api && api.layout) || {};
+    el('who').style.height = (layout.height || 146) + 'px';
+    document.body.className = layout.platform === 'tvos' ? 'tv' : '';
+  }
+
+  el('open').addEventListener('click', function () {
+    if (!current || !api) return;
+    api.open('person', current.id).catch(function () {});
+  });
+
+  if (!api) return;
+  api.onContentChanged(render);
+  api.onLayoutChanged(resize);
+  resize();
+  render();
+})();
+</script>
+</body>
+</html>
