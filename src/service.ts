@@ -277,8 +277,41 @@ export async function handleSearch(params: { keyword?: string; kind?: string; pa
   ];
 }
 
+const uniqueStr = (list: string[]) => list.filter((value, index) => list.indexOf(value) === index);
+
+/**
+ * 匿名读不到时，从账号里的歌单行挖其他 id / 作者再试一轮：
+ * 收藏来的歌单，行里的 id 可能只是「收藏记录 id」，真正的 playlist id 或原作者在别的字段里。
+ */
+async function minePlaylistRow(id: string): Promise<{ ids: string[]; owners: string[]; keys: string[] }> {
+  if (!getAccount()) return { ids: [], owners: [], keys: [] };
+  const rows = await myPlaylists(50).catch(() => [] as Json[]);
+  const row = rows.find((item) => String(item.base_info?.id ?? "") === id);
+  if (!row) return { ids: [], owners: [], keys: [] };
+  const ids: string[] = [];
+  const owners: string[] = [];
+  const walk = (node: any, key: string, depth: number) => {
+    if (!node || depth > 3) return;
+    if (typeof node === "string") {
+      if (node.startsWith("_000")) owners.push(node);
+      else if (/^\d{15,20}$/.test(node)) {
+        if (/owner|creator|author|user|uid|sec/i.test(key)) owners.push(node);
+        else ids.push(node);
+      }
+      return;
+    }
+    if (typeof node === "object") for (const k in node) walk(node[k], k, depth + 1);
+  };
+  for (const k in row) walk(row[k], k, 0);
+  return {
+    ids: uniqueStr(ids.filter((value) => value !== id)).slice(0, 3),
+    owners: uniqueStr(owners.filter((value) => value !== id)).slice(0, 3),
+    keys: Object.keys(row.base_info ?? {}),
+  };
+}
+
 async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoItem> {
-  // 匿名接口对部分歌单会报「记录不存在」，账号接口又不认收藏来的歌单（28001003）。
+  // 匿名接口对部分歌单会报「记录不存在」，账号票据又不被这个端点接受（28001003）。
   // 这里把几种走法依次试一遍，全挂就把各家错误摊在详情页上，方便定位。
   const tries: Array<[string, () => Promise<{ playlist?: Json; entities: Json[] }>]> = [["匿名", () => playlistTracks(id, ownerId)]];
   if (ownerId) tries.push(["匿名·无作者", () => playlistTracks(id, "")]);
@@ -292,22 +325,42 @@ async function loadPlaylistDetail(id: string, ownerId: string): Promise<VideoIte
 
   const errors: string[] = [];
   let result: { playlist?: Json; entities: Json[] } | null = null;
-  for (const [label, run] of tries) {
+  const run = async (label: string, task: () => Promise<{ playlist?: Json; entities: Json[] }>) => {
     try {
-      const attempt = await run();
+      const attempt = await task();
       if (attempt.playlist || attempt.entities.length) {
         result = attempt;
-        break;
+        return true;
       }
       errors.push(`${label}:空结果`);
     } catch (error) {
       errors.push(`${label}:${String((error as Error)?.message ?? error)}`);
     }
+    return false;
+  };
+  for (const [label, task] of tries) if (await run(label, task)) break;
+
+  let rowKeys: string[] = [];
+  if (!result) {
+    // 换 id / 换作者再试：只在前面的走法全挂后才跑，正常歌单不受影响
+    const mined = await minePlaylistRow(id);
+    rowKeys = mined.keys;
+    let budget = 6;
+    for (const candidateId of [id, ...mined.ids]) {
+      for (const candidateOwner of uniqueStr([ownerId, ...mined.owners])) {
+        if (budget-- <= 0) break;
+        if (candidateId === id && candidateOwner === ownerId) continue;
+        if (await run(`匿名 ${candidateId.slice(-6)}/${candidateOwner.slice(-6) || "-"}`, () => playlistTracks(candidateId, candidateOwner))) break;
+      }
+      if (result) break;
+    }
   }
   if (!result) {
-    return noticeItem("这个歌单打不开", `id ${id}`, `接口反馈：${errors.join(" / ").slice(0, 220)}`);
+    const fields = rowKeys.length ? ` · 字段:${rowKeys.join(",")}` : "";
+    return noticeItem("这个歌单打不开", `id ${id}`, `接口反馈：${errors.join(" / ").slice(0, 200)}${fields}`);
   }
-  const { playlist, entities } = result;
+  const picked: { playlist?: Json; entities: Json[] } = result;
+  const { playlist, entities } = picked;
   const tracks = entities.map((entity) => toRexTrack(trackRef(entity)));
   const base = playlist?.base_info ?? {};
   const cover = formatCover(playlist?.display_info?.url_cover);
