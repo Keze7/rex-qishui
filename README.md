@@ -67,7 +67,7 @@ Rex 跑在 iOS 的 JavaScriptCore 里，**没有 `node:crypto`**，也没有 Web
 导入方式：Rex → 首页 → 导入首页列表 → 粘贴下面的直链。
 
 ```
-https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@855de1a/home/qishui-home.rex
+https://cdn.jsdelivr.net/gh/Keze7/rex-qishui@fadd1b0/home/qishui-home.rex
 ```
 
 `rex-layout.json` 里每张卡片的 `widgetBundleId` 必须是 `WidgetMetadata.id`（`qishui.music`），
