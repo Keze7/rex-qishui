@@ -36,6 +36,22 @@ interface LoadRecentPlayedReturnType extends Array<VideoItem> {
 declare let loadRecentPlayed: (params: LoadRecentPlayedParams) => LoadRecentPlayedReturnType | Promise<LoadRecentPlayedReturnType>;
 //#endregion recentPlayed
 
+//#region taste
+/** Params of 根据你的口味 */
+interface LoadTasteParams extends QishuiMusic.GlobalParams, VideoListParams {
+}
+
+/** Return Type of 根据你的口味 */
+interface LoadTasteReturnType extends Array<VideoItem> {
+}
+
+/**
+ * 根据你的口味
+ * @description 拿最近播放里的歌手挑的 50 首
+ */
+declare let loadTaste: (params: LoadTasteParams) => LoadTasteReturnType | Promise<LoadTasteReturnType>;
+//#endregion taste
+
 //#region daily
 /** Params of 每日推荐 */
 interface LoadDailyParams extends QishuiMusic.GlobalParams, VideoListParams {

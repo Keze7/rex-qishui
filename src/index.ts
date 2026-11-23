@@ -13,6 +13,7 @@ import {
   handleScenes,
   handleSearch,
   handleSubtitle,
+  handleTaste,
 } from "./service";
 
 const widgetVersion = (() => {
@@ -53,6 +54,14 @@ WidgetMetadata = {
       type: "video",
       functionName: "loadRecentPlayed",
       cacheDuration: 60,
+    },
+    {
+      id: "taste",
+      title: "根据你的口味",
+      subtitle: "拿最近播放里的歌手挑的 50 首",
+      type: "video",
+      functionName: "loadTaste",
+      cacheDuration: 300,
     },
     {
       id: "daily",
@@ -179,6 +188,8 @@ loadLogin = async () => handleLogin();
 loadMyPlaylists = async () => handleMyPlaylists();
 
 loadRecentPlayed = async () => handleRecentPlayed();
+
+loadTaste = async () => handleTaste();
 
 logoutAccount = async () => {
   logout();

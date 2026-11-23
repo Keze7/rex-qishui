@@ -7,6 +7,7 @@ import {
   albumLinksOf,
   albumRef,
   artistInfo,
+  artistLinksOf,
   artistRef,
   artistTracks,
   feedModes,
@@ -700,8 +701,47 @@ export async function handleRecentPlayed(count = 50): Promise<VideoItem[]> {
   }
 }
 
-export async function handleSubtitle(params: { id?: string; link?: string }): Promise<SubtitleItem[]> {
-  const parsed = params.link ? parseLink(params.link) : null;
+/** 用账号的最近播放当种子：最常听的几个歌手，各拉一批热门曲，轮流出歌并排掉听过的 */
+export async function handleTaste(seedCount = 24, artistLimit = 5): Promise<VideoItem[]> {
+  if (!getAccount()) return [loginPrompt()];
+  try {
+    const recent = await myRecentPlayed(seedCount);
+    if (!recent.length) return [noticeItem("还没有播放记录", "在汽水音乐里听几首歌再回来")];
+    const played = new Set<string>();
+    const weights = new Map<string, { name: string; hits: number }>();
+    for (const entity of recent) {
+      played.add(String(entity?.base_info?.id ?? entity?.id ?? ""));
+      for (const artist of artistLinksOf(entity)) {
+        const row = weights.get(artist.id) ?? { name: artist.name, hits: 0 };
+        row.hits += 1;
+        weights.set(artist.id, row);
+      }
+    }
+    const top = [...weights.entries()].sort((a, b) => b[1].hits - a[1].hits).slice(0, artistLimit);
+    if (!top.length) return [noticeItem("没认出歌手", "最近播放里没有带歌手信息的曲目")];
+    const groups = await Promise.all(top.map(([id]) => artistTracks(id, 20).catch(() => [] as Json[])));
+    const seen = new Set(played);
+    const out: VideoItem[] = [];
+    // 一个歌手一首地轮，避免整段都是同一个人
+    for (let i = 0; i < 20 && out.length < 50; i++) {
+      for (const tracks of groups) {
+        const entity = tracks[i];
+        if (!entity) continue;
+        const ref = trackRef(entity);
+        if (!ref.id || seen.has(ref.id)) continue;
+        seen.add(ref.id);
+        out.push(toRexTrack(ref));
+        if (out.length >= 50) break;
+      }
+    }
+    if (!out.length) return [noticeItem("没凑出新歌", "最近播放里的歌手暂时没有别的曲目")];
+    return out;
+  } catch (error) {
+    return [noticeItem("口味推荐失败", String((error as Error).message ?? error).slice(0, 90))];
+  }
+}
+
+export async function handleSubtitle(params: { id?: string; link?: string }): Promise<SubtitleItem[]> {  const parsed = params.link ? parseLink(params.link) : null;
   const id = parsed?.kind === "track" ? parsed.id : /^\d{1,30}$/.test(String(params.id ?? "")) ? String(params.id) : "";
   if (!id) return [];
   const entity = await trackEntity(id);
